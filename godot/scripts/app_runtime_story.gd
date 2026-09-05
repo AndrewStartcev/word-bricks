@@ -1,7 +1,7 @@
 extends "res://scripts/app_runtime_compat.gd"
 
 # Story/progression layer:
-# - five-frame intro comic before the first game;
+# - comic-book intro before the first game;
 # - one-time migration that clears old prototype progression;
 # - replay intro and reset progression from settings.
 
@@ -13,6 +13,14 @@ const INTRO_FRAMES: Array[Texture2D] = [
 	preload("res://assets/comics/intro/intro_03_disappearance.png"),
 	preload("res://assets/comics/intro/intro_04_owl.png"),
 	preload("res://assets/comics/intro/intro_05_journey.png")
+]
+
+# Comic pages: two panels on the first two pages and a final splash page.
+# The source art already contains all narration text, so we never redraw it.
+const INTRO_PAGES: Array = [
+	[0, 1],
+	[2, 3],
+	[4]
 ]
 
 var intro_seen: bool = false
@@ -38,6 +46,19 @@ func _input(event: InputEvent) -> void:
 	super._input(event)
 
 
+func _show_main_menu() -> void:
+	super._show_main_menu()
+	# GameplayUILayer is full-screen and becomes PASS while playing. If it stays
+	# PASS after leaving gameplay, it sits above menu/level buttons and captures
+	# their mouse events. Non-game screens must always restore IGNORE.
+	gameplay_ui_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+func _show_level_select() -> void:
+	super._show_level_select()
+	gameplay_ui_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
 func _on_play_pressed() -> void:
 	_ui_click()
 	if intro_seen:
@@ -46,24 +67,28 @@ func _on_play_pressed() -> void:
 		_show_intro(0)
 
 
-func _show_intro(frame_index: int = 0) -> void:
+func _show_intro(page_index: int = 0) -> void:
 	_dispose_game()
 	_clear_layer(screen_layer)
 	_clear_layer(gameplay_ui_layer)
 	_clear_modal()
 	current_screen = "intro"
 	current_modal = ""
-	intro_index = clampi(frame_index, 0, INTRO_FRAMES.size() - 1)
+	intro_index = clampi(page_index, 0, INTRO_PAGES.size() - 1)
+
+	# Same input-layer fix as menu/levels: comic buttons live on screen_layer.
+	gameplay_ui_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	if app_audio != null:
 		app_audio.set_suspended("gameplay", false)
 
-	_render_intro_frame()
+	_render_intro_page()
 
 
-func _render_intro_frame() -> void:
+func _render_intro_page() -> void:
 	_clear_layer(screen_layer)
 	_clear_layer(gameplay_ui_layer)
+	gameplay_ui_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var background: ColorRect = ColorRect.new()
 	background.color = Color("020914")
@@ -71,24 +96,29 @@ func _render_intro_frame() -> void:
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(background)
 
-	var frame: TextureRect = TextureRect.new()
-	frame.texture = INTRO_FRAMES[intro_index]
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_full_rect(frame)
-	frame.modulate.a = 0.0
-	screen_layer.add_child(frame)
+	# A subtle blue-black vignette keeps the comic page feeling separate from UI.
+	var page_back: PanelContainer = PanelContainer.new()
+	page_back.position = Vector2(28.0, 24.0)
+	page_back.size = Vector2(1544.0, 852.0)
+	page_back.add_theme_stylebox_override("panel", _comic_page_style())
+	page_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	screen_layer.add_child(page_back)
 
-	var fade: Tween = create_tween()
-	fade.tween_property(frame, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	var page: Array = INTRO_PAGES[intro_index]
+	if page.size() == 1:
+		# Final comic splash page.
+		_add_comic_panel(INTRO_FRAMES[int(page[0])], Rect2(150.0, 88.0, 1300.0, 731.0))
+	else:
+		# Classic two-panel spread. Each source frame remains uncropped and readable.
+		_add_comic_panel(INTRO_FRAMES[int(page[0])], Rect2(62.0, 165.0, 718.0, 404.0))
+		_add_comic_panel(INTRO_FRAMES[int(page[1])], Rect2(820.0, 165.0, 718.0, 404.0))
 
-	var counter_panel: PanelContainer = _panel(Vector2(112.0, 44.0), Color(0.008, 0.025, 0.055, 0.78))
-	counter_panel.position = Vector2(42.0, 38.0)
+	var counter_panel: PanelContainer = _panel(Vector2(112.0, 44.0), Color(0.008, 0.025, 0.055, 0.84))
+	counter_panel.position = Vector2(48.0, 38.0)
 	screen_layer.add_child(counter_panel)
 	var counter_margin: MarginContainer = _margin(12, 6, 12, 6)
 	counter_panel.add_child(counter_margin)
-	counter_margin.add_child(_label("%d / %d" % [intro_index + 1, INTRO_FRAMES.size()], 16, COL_TEXT, HORIZONTAL_ALIGNMENT_CENTER))
+	counter_margin.add_child(_label("%d / %d" % [intro_index + 1, INTRO_PAGES.size()], 16, COL_TEXT, HORIZONTAL_ALIGNMENT_CENTER))
 
 	var skip_button: Button = _button("Пропустить", "ghost", null, 48.0)
 	skip_button.position = Vector2(1370.0, 34.0)
@@ -96,12 +126,80 @@ func _render_intro_frame() -> void:
 	skip_button.pressed.connect(_on_intro_skip_pressed)
 	screen_layer.add_child(skip_button)
 
-	var next_text: String = "Начать" if intro_index == INTRO_FRAMES.size() - 1 else "Далее"
+	var next_text: String = "Начать" if intro_index == INTRO_PAGES.size() - 1 else "Далее"
 	var next_button: Button = _button(next_text, "primary", null, 58.0)
 	next_button.position = Vector2(1320.0, 806.0)
 	next_button.size = Vector2(230.0, 58.0)
 	next_button.pressed.connect(_on_intro_next_pressed)
 	screen_layer.add_child(next_button)
+
+	# Fade the complete page in, not each panel independently.
+	for child in screen_layer.get_children():
+		if child == background:
+			continue
+		if child is CanvasItem:
+			(child as CanvasItem).modulate.a = 0.0
+	var fade: Tween = create_tween()
+	fade.set_parallel(true)
+	for child in screen_layer.get_children():
+		if child == background:
+			continue
+		if child is CanvasItem:
+			fade.tween_property(child, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+func _add_comic_panel(texture: Texture2D, rect: Rect2) -> void:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.position = rect.position
+	panel.size = rect.size
+	panel.custom_minimum_size = rect.size
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel", _comic_panel_style())
+	screen_layer.add_child(panel)
+
+	var margin: MarginContainer = _margin(8, 8, 8, 8)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(margin)
+
+	var image: TextureRect = TextureRect.new()
+	image.texture = texture
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(image)
+
+
+func _comic_page_style() -> StyleBoxFlat:
+	var box: StyleBoxFlat = StyleBoxFlat.new()
+	box.bg_color = Color(0.008, 0.020, 0.045, 0.94)
+	box.border_color = Color(0.18, 0.33, 0.52, 0.40)
+	box.border_width_left = 1
+	box.border_width_top = 1
+	box.border_width_right = 1
+	box.border_width_bottom = 1
+	box.corner_radius_top_left = 10
+	box.corner_radius_top_right = 10
+	box.corner_radius_bottom_left = 10
+	box.corner_radius_bottom_right = 10
+	return box
+
+
+func _comic_panel_style() -> StyleBoxFlat:
+	var box: StyleBoxFlat = StyleBoxFlat.new()
+	box.bg_color = Color("e8dfcc")
+	box.border_color = Color("f5ead3")
+	box.border_width_left = 4
+	box.border_width_top = 4
+	box.border_width_right = 4
+	box.border_width_bottom = 4
+	box.corner_radius_top_left = 5
+	box.corner_radius_top_right = 5
+	box.corner_radius_bottom_left = 5
+	box.corner_radius_bottom_right = 5
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.38)
+	box.shadow_size = 12
+	box.shadow_offset = Vector2(0.0, 6.0)
+	return box
 
 
 func _on_intro_next_pressed() -> void:
@@ -115,11 +213,11 @@ func _on_intro_skip_pressed() -> void:
 
 
 func _advance_intro() -> void:
-	if intro_index >= INTRO_FRAMES.size() - 1:
+	if intro_index >= INTRO_PAGES.size() - 1:
 		_finish_intro()
 		return
 	intro_index += 1
-	_render_intro_frame()
+	_render_intro_page()
 
 
 func _finish_intro() -> void:
