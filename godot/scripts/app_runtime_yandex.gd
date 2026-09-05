@@ -11,6 +11,7 @@ const INTERSTITIAL_MIN_GAMEPLAY_SECONDS: float = 180.0
 const INTERSTITIAL_MIN_COMPLETED_LEVELS: int = 2
 
 var _cloud_sync_enabled: bool = false
+var _cloud_sync_suspended_for_account_selection: bool = false
 var _cloud_dirty: bool = false
 var _cloud_timer: float = 0.0
 var _cloud_save_in_flight: bool = false
@@ -59,7 +60,12 @@ func _process(delta: float) -> void:
 		if not paused and not finished and not _platform_pause_active and not _ad_pause_active:
 			_gameplay_seconds_since_interstitial += delta
 
-	if not _cloud_sync_enabled or not _cloud_dirty or _cloud_save_in_flight:
+	if (
+		not _cloud_sync_enabled
+		or _cloud_sync_suspended_for_account_selection
+		or not _cloud_dirty
+		or _cloud_save_in_flight
+	):
 		return
 	_cloud_timer -= delta
 	if _cloud_timer <= 0.0:
@@ -217,6 +223,8 @@ func _connect_platform_signals() -> void:
 		YandexGames.rewarded_closed.connect(_on_rewarded_closed)
 	if not YandexGames.cloud_saved.is_connected(_on_cloud_saved):
 		YandexGames.cloud_saved.connect(_on_cloud_saved)
+	if not YandexGames.account_selection_opened.is_connected(_on_account_selection_opened):
+		YandexGames.account_selection_opened.connect(_on_account_selection_opened)
 	if not YandexGames.account_changed.is_connected(_on_account_changed):
 		YandexGames.account_changed.connect(_on_account_changed)
 
@@ -237,7 +245,7 @@ func _on_platform_pause() -> void:
 		if _resume_game_after_platform_pause:
 			_pause_game(true)
 
-	if _cloud_dirty:
+	if _cloud_dirty and not _cloud_sync_suspended_for_account_selection:
 		_sync_cloud_now(true)
 
 
@@ -280,7 +288,7 @@ func _begin_ad_pause() -> void:
 			_pause_game(true)
 
 
-func _end_ad_pause() -> void:
+func _end_ad_pause() -> bool:
 	_ad_pause_active = false
 	if app_audio != null:
 		app_audio.set_suspended("yandex_ad", false)
@@ -289,6 +297,8 @@ func _end_ad_pause() -> void:
 		_pause_game(false)
 		YandexGames.gameplay_start()
 		_resume_game_after_ad = false
+		return true
+	return false
 
 
 func _on_fullscreen_closed(_was_shown: bool) -> void:
@@ -312,8 +322,8 @@ func _on_rewarded(tag: String) -> void:
 
 
 func _on_rewarded_closed(_tag: String, _was_shown: bool) -> void:
-	_end_ad_pause()
-	if current_screen == "game" and game != null and is_instance_valid(game) and current_modal.is_empty() and not _platform_pause_active and not _ad_pause_active:
+	var resumed_by_ad: bool = _end_ad_pause()
+	if not resumed_by_ad and current_screen == "game" and game != null and is_instance_valid(game) and current_modal.is_empty() and not _platform_pause_active and not _ad_pause_active:
 		YandexGames.gameplay_start()
 
 
@@ -337,7 +347,7 @@ func _queue_cloud_sync() -> void:
 
 
 func _sync_cloud_now(flush: bool) -> void:
-	if _cloud_save_in_flight:
+	if _cloud_save_in_flight or _cloud_sync_suspended_for_account_selection:
 		return
 	if not YandexGames.sdk_ready or not YandexGames.player_ready:
 		_cloud_dirty = true
@@ -410,7 +420,15 @@ func _bump_cloud_revision() -> void:
 	config.save(SETTINGS_PATH)
 
 
+func _on_account_selection_opened() -> void:
+	# Yandex explicitly recommends pausing regular player-data synchronization while
+	# the platform asks the user which anonymous/authorized progress to keep.
+	_cloud_sync_suspended_for_account_selection = true
+
+
 func _on_account_changed() -> void:
+	_cloud_sync_suspended_for_account_selection = false
+
 	# Never replace an active round from underneath the player. If an account
 	# changes mid-game, the current local session remains authoritative and is
 	# queued to the newly selected Player after the next save boundary.
