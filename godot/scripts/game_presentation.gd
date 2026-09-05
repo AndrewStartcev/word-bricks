@@ -25,6 +25,13 @@ func _draw_owl() -> void:
 	draw_texture_rect(texture, Rect2(2.0, 610.0, 205.0, 205.0), false)
 
 
+func _draw_top_hud() -> void:
+	# Settings and pause are real Control buttons in app_runtime.gd.
+	_draw_stat_box(Rect2(980.0, 20.0, 185.0, 60.0), ICON_SCORE, "Очки", str(score), Color("ffd253"))
+	_draw_stat_box(Rect2(1175.0, 20.0, 150.0, 60.0), ICON_COMBO, "Комбо", "x%d" % maxi(combo, 1), Color("ffc33b"))
+	_draw_stat_box(Rect2(1335.0, 20.0, 165.0, 60.0), ICON_TIME, "Время", _format_time(), Color.WHITE)
+
+
 func _draw_left_panel() -> void:
 	var panel: Rect2 = Rect2(125.0, 94.0, 330.0, 720.0)
 	_draw_panel(panel, Color(0.010, 0.045, 0.105, 0.91), Color(0.09, 0.38, 0.66, 0.76))
