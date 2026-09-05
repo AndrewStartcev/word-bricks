@@ -45,10 +45,11 @@ func _debug_cycle_location() -> void:
 	var next_location_id: String = String(order[next_index])
 
 	# Preview only: do not unlock, complete or save anything.
+	# Jump straight into level 1 so backgrounds/UI can be reviewed quickly.
 	current_level_id = next_location_id
 	current_stage_number = 1
 	transition_target_id = ""
-	_show_location_levels(next_location_id)
+	_start_game()
 
 
 func _find_button_by_text(root: Node, wanted_text: String) -> Button:
