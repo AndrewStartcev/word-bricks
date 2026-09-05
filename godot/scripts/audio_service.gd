@@ -121,7 +121,7 @@ func play_sfx(event_id: String) -> void:
 
 
 func start_music() -> void:
-	unlock_audio()
+	# Web builds unlock audio only after the first real user input.
 	_update_music_state()
 
 
@@ -182,7 +182,7 @@ func _ensure_bus(bus_name: String) -> int:
 	if index >= 0:
 		return index
 	AudioServer.add_bus()
-	index = AudioServer.bus_count - 1
+	index = AudioServer.get_bus_count() - 1
 	AudioServer.set_bus_name(index, bus_name)
 	return index
 
@@ -206,9 +206,7 @@ func _linear_volume_to_db(value: float) -> float:
 
 
 func _update_music_state() -> void:
-	if _music_player == null:
-		return
-	if not _audio_unlocked:
+	if _music_player == null or not _audio_unlocked:
 		return
 
 	var should_suspend: bool = not _suspended_reasons.is_empty()
