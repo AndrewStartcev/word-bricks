@@ -8,6 +8,10 @@ config_version=5
 config/name="Словопад"
 run/main_scene="res://main.tscn"
 
+[autoload]
+
+YandexGames="*res://scripts/yandex_games_service.gd"
+
 [display]
 
 window/size/viewport_width=1600
