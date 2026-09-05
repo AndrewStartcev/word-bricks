@@ -1,0 +1,396 @@
+{
+  "version": 2,
+  "date": "2026-09-05",
+  "asset_count": 47,
+  "identical_tile_alpha": true,
+  "png_count": 16,
+  "svg_count": 18,
+  "audio_count": 13,
+  "godot_runtime_tested": false,
+  "in_game_audio_listened": false,
+  "visual_review": "Tiles at 40 and 64 px; new icons on dark; five existing owl poses retained; background reviewed full frame.",
+  "files": [
+    {
+      "path": "godot/assets/audio/music/music_forest_loop.ogg",
+      "bytes": 1042749,
+      "sha256": "b919dc49d93ea68641c3c8f08e470954019bd9ed68e31ed39bf426292a157884",
+      "codec": "vorbis",
+      "channels": 2,
+      "sample_rate": 44100,
+      "decoded_seconds": 61.10936507936508,
+      "peak": 0.20939721167087555,
+      "loop_seam_delta": 0.0009051654487848282,
+      "adjacent_delta_p99": 0.0244535394012928
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_chapter_complete.wav",
+      "bytes": 43332,
+      "sha256": "57b6a61b27caca642006860cdcab3798bed293398a6b6838053b26b4c5a54eb9",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.4904081632653061,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_coin_collect.wav",
+      "bytes": 8856,
+      "sha256": "a6f1c86f030ec59feda001bf0fb086655f0a43e3b2473382f99f130508f5204b",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.09952380952380953,
+      "peak": 0.500579833984375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_defeat.wav",
+      "bytes": 36942,
+      "sha256": "657711605703771f7a316f819e07cff97229cef9c720f5c76b4f275f479dd52e",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.4179591836734694,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_hint.wav",
+      "bytes": 43356,
+      "sha256": "3e38e762107f5b365a581c5b52f78d9ffca035118d80b7cde497263e3c73129e",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.4906802721088435,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_invalid.wav",
+      "bytes": 14670,
+      "sha256": "7d0e1b94efbd1a5ae6de3f84878dd48d3ddce274924689f2e17b8bffb31d2734",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.1654421768707483,
+      "peak": 0.500579833984375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_line_clear.wav",
+      "bytes": 24380,
+      "sha256": "68605ed7cb7e30ed3b7ba1ee588d2fcbe67070d78e8f2b6e599eeb363851ac46",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.2755328798185941,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_piece_lock.wav",
+      "bytes": 16676,
+      "sha256": "a42acf23f1a4e63c355db9b2f3e0a5b55ef9a0f03631f59f2965fc20bbb8f755",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.1881859410430839,
+      "peak": 0.500579833984375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_piece_move.wav",
+      "bytes": 4046,
+      "sha256": "375c232612fb73eb446ed987fd9ebc437434c680cc303bd368b972d69cb44076",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.04498866213151927,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_piece_rotate.wav",
+      "bytes": 54300,
+      "sha256": "92b00969ca56a15c684f3fb4e3b270c2db9cbae8b89222405da11279b8490834",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.6147619047619047,
+      "peak": 0.500579833984375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_ui_back.wav",
+      "bytes": 5456,
+      "sha256": "c993d30ec30479e8e389b3d7e85952b71bf1a98f28a878ec87e4b19a5ae623b2",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.0609750566893424,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_ui_click.wav",
+      "bytes": 8644,
+      "sha256": "4f86d0f33c4e0e818b0ba64f9cd18fabcfe23b3dbb742896857010e96a98c11c",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.09712018140589569,
+      "peak": 0.70794677734375
+    },
+    {
+      "path": "godot/assets/audio/sfx/sfx_word_complete.wav",
+      "bytes": 47618,
+      "sha256": "1b81259e38c9e53eebb48718581bdd10e7c8b56e259a3e3aae888d4bb4ea9d0e",
+      "codec": "pcm_s16le",
+      "channels": 1,
+      "sample_rate": 44100,
+      "decoded_seconds": 0.5390022675736962,
+      "peak": 0.6856689453125
+    },
+    {
+      "path": "godot/assets/backgrounds/background_forest.png",
+      "bytes": 2420965,
+      "sha256": "0b9419f5e12eb502ea3db96b14f0e23caf93c398da4cac74aa5b4734417d86fb",
+      "size": [
+        1920,
+        1080
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "godot/assets/characters/owl/owl_defeat.png",
+      "bytes": 198642,
+      "sha256": "9af09d9c4d92732d5dcc0a295362361bcc210cf1923bced35499a4dd5700b703",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/characters/owl/owl_happy.png",
+      "bytes": 265327,
+      "sha256": "ef55077eabb07716dc00828b94a5dbee55a50e108f7578b517fa9f988950669e",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/characters/owl/owl_hint.png",
+      "bytes": 225570,
+      "sha256": "8af5cef2961dedaf1d47d6fdb0016aabaf8313d1e97f83877398621ae085445e",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/characters/owl/owl_idle.png",
+      "bytes": 210275,
+      "sha256": "ecf16e1bad393a9eb3f16680d86179ad802cdac137d971855a02949e30de7ab7",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/characters/owl/owl_worried.png",
+      "bytes": 206912,
+      "sha256": "84a58773e7d18007a7f75e5fb3eb69d4debbd35861156487a6a348aaf9e4cd62",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/fx/particle_dot.png",
+      "bytes": 791,
+      "sha256": "7dd7edb27d94ef27fd55c2a9dbb1f4921adba995e7a7eb04184040ee05ab747e",
+      "size": [
+        64,
+        64
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/fx/particle_leaf.png",
+      "bytes": 999,
+      "sha256": "2b8de6d090eb153f0a4d26e0f422831c6af33a0fb3ffa7ca1eb1de12c16d22c3",
+      "size": [
+        64,
+        64
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/fx/particle_shard.png",
+      "bytes": 727,
+      "sha256": "8df1c46772df349e769bc0f58b3fc38b84ad728ae72288defdb232b5fa3d95a5",
+      "size": [
+        64,
+        64
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/fx/particle_spark.png",
+      "bytes": 817,
+      "sha256": "701548130d0be2278fa1d3829fc2ce432170409bad8ad099e5a445ed0a00c8ff",
+      "size": [
+        64,
+        64
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/rewards/coin_gold.png",
+      "bytes": 17629,
+      "sha256": "2a3becc3c99307efc3bb7a972237948a6e5cc60d6ce0d9d2fd57986ccc2f751d",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/tiles/tile_bonus_green.png",
+      "bytes": 6545,
+      "sha256": "61f055d5e5b2e3a6118ac155302622b4d27530efe0f88582916131b3204c2215",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/tiles/tile_danger_red.png",
+      "bytes": 6484,
+      "sha256": "d2503f58bc55e3bc58a0b80a69654df7f390c8d000acf429fc992f50b4c56a03",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/tiles/tile_goal_gold.png",
+      "bytes": 6383,
+      "sha256": "147198a76426367026acd985b6bcd6e176e3f97e8de6529814781c6dccc29f22",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/tiles/tile_normal_blue.png",
+      "bytes": 6321,
+      "sha256": "32150f01e0a805a3dcc12b3ff4d76add26f92eadaa104f382f30a82fd7244766",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/tiles/tile_special_purple.png",
+      "bytes": 6413,
+      "sha256": "b10a981814e8edf6fcea3562d9fb2ce569041f7cf9ce52ef2582fc5c4cd210dd",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_chapter_forest.svg",
+      "bytes": 431,
+      "sha256": "47d44905e2404b24fbc0f10e81a04111b410d3c1aa87825b983222c8e5c6b6f9"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_check.svg",
+      "bytes": 413,
+      "sha256": "50b1f77cd4d561650eec166a8c6bbcd8499a9640315abcb302cf13a521cf9206"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_clue_paw.svg",
+      "bytes": 416,
+      "sha256": "088141ea2e693896ba7b5461520525faf8b34e0a074f2476e5ce77146e75dd17"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_coin.svg",
+      "bytes": 873,
+      "sha256": "c8fbcbb3d8241239c79dcce79ac5a4ed8c9add1652ee601b9b25cf709184a255"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_combo.svg",
+      "bytes": 329,
+      "sha256": "d45961833e523e63abd5e0abf279a30a709fa009e5c22017f743c91fbc086562"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_hint.svg",
+      "bytes": 558,
+      "sha256": "a84a589b17d46b95ee54a559201748f174a9bb029fb89db62873911373ad1140"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_home.svg",
+      "bytes": 365,
+      "sha256": "57981b9c58e06efb35d343101a8bea9ffa3dda2531a6b2bf1ea4c137f5e6bfff"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_leaf.svg",
+      "bytes": 328,
+      "sha256": "5110369ed05d2c18b2bae554da6d3be923ff1cb305c34ef8b236355633808b85"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_lock.svg",
+      "bytes": 518,
+      "sha256": "3c2bc2b015e1998785a98c739a769fa9a485a4f5c7a2f5ff2fa39e0e01c2ccd8"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_music_off.svg",
+      "bytes": 598,
+      "sha256": "aaafab958d16ddea20206152ed12bbe12603b57f97790c9c273686b5916c6f1d"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_music_on.svg",
+      "bytes": 412,
+      "sha256": "174d8428891292f19f67bed7ba2b9e8ab5a07b091dc40e94e74adb785d5af0ba"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_pause.svg",
+      "bytes": 389,
+      "sha256": "8ec76efdc5b2b458fbbe44db8af9e2bf0d48fc6f21e10e2a3e3a610c9b2ee446"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_restart.svg",
+      "bytes": 423,
+      "sha256": "55980d65e51131ba3099530f0e8c2ac8a5a06f74c847ee9a310b87ea65cd0bc4"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_score.svg",
+      "bytes": 391,
+      "sha256": "a97ae9ee9b209d3c6bbe7f8b16eefacf1da839a426987c39dc4494f7c6769dbf"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_settings.svg",
+      "bytes": 1311,
+      "sha256": "be8f87c7cfe5eef3a8725d25cd3acc15c48a80b410d5c694128165fbac1991b2"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_sound_off.svg",
+      "bytes": 630,
+      "sha256": "5cd0670ffcf01e245cbfd5c34da076a6d0866ab56370c2854bc8fd33407d2294"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_sound_on.svg",
+      "bytes": 444,
+      "sha256": "1ff8b26cf1527407fda4ca3399398c60da7f42a0c71c971a7b9056ccff781dbc"
+    },
+    {
+      "path": "godot/assets/ui/icons/icon_time.svg",
+      "bytes": 576,
+      "sha256": "2d78496d419d5278a0a675cf1bb1a113da180f3842fd0661fa0cfc0874173af4"
+    }
+  ]
+}

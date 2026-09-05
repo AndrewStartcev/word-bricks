@@ -1,9 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-<defs><linearGradient id="bevel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#79eaa0"/><stop offset="1" stop-color="#169850"/></linearGradient><linearGradient id="face" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#28be67"/><stop offset="1" stop-color="#15904b"/></linearGradient></defs>
-<rect x="8" y="8" width="240" height="240" rx="45" fill="#135b3e"/>
-<rect x="12" y="12" width="232" height="229" rx="41" fill="#169850"/>
-<rect x="13" y="12" width="230" height="221" rx="40" fill="url(#bevel)"/>
-<rect x="27" y="25" width="202" height="199" rx="29" fill="url(#face)" stroke="#d0ffdd" stroke-opacity=".58" stroke-width="3"/>
-<path d="M35 57 Q35 33 60 33 H188" fill="none" stroke="#d0ffdd" stroke-width="4" stroke-linecap="round" opacity=".58"/>
-<path d="M42 46 C48 36 61 34 62 40 C61 48 47 61 40 62 C35 61 37 52 42 46Z" fill="#d0ffdd" opacity=".48"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs><linearGradient id="bevel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#72fa93"/><stop offset="1" stop-color="#079547"/></linearGradient><linearGradient id="face" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17d568"/><stop offset="1" stop-color="#049749"/></linearGradient></defs>
+<rect x="8" y="8" width="240" height="240" rx="31" fill="#075e36"/>
+<rect x="11" y="11" width="234" height="229" rx="28" fill="#079547"/>
+<rect x="12" y="11" width="232" height="220" rx="27" fill="url(#bevel)"/>
+<rect x="24" y="23" width="208" height="201" rx="19" fill="url(#face)"/>
+<path d="M25 67V46Q25 25 47 25H206" fill="none" stroke="#ccffd6" stroke-opacity=".9" stroke-width="4" stroke-linecap="round"/>
+<path d="M231 58V199Q231 222 208 223H59" fill="none" stroke="#ccffd6" stroke-opacity=".2" stroke-width="3" stroke-linecap="round"/>
+<path d="M31 44Q31 31 45 31H74Q48 37 31 60Z" fill="#ccffd6" opacity=".5"/></svg>
