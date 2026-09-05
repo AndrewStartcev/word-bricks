@@ -157,10 +157,12 @@ func _on_levels_pressed() -> void:
 
 
 func _can_request_interstitial() -> bool:
-	return YandexGames.sdk_ready \
-		and not _interstitial_pending \
-		and _completed_levels_since_interstitial >= INTERSTITIAL_MIN_COMPLETED_LEVELS \
+	return (
+		YandexGames.sdk_ready
+		and not _interstitial_pending
+		and _completed_levels_since_interstitial >= INTERSTITIAL_MIN_COMPLETED_LEVELS
 		and _gameplay_seconds_since_interstitial >= INTERSTITIAL_MIN_GAMEPLAY_SECONDS
+	)
 
 
 func request_rewarded_hint() -> void:
@@ -324,8 +326,11 @@ func _save_local_state() -> void:
 
 
 func _queue_cloud_sync() -> void:
-	# Mark dirty even when the SDK/player is temporarily unavailable. _process()
-	# will retry once the service becomes ready instead of silently losing a save.
+	# Native builds and a failed SDK keep using local saves only.
+	if not YandexGames.available or not YandexGames.sdk_ready:
+		return
+	# Mark dirty even when Player is temporarily unavailable. _process() will retry
+	# once it becomes ready instead of silently losing a save.
 	_cloud_dirty = true
 	_cloud_timer = CLOUD_DEBOUNCE_SECONDS
 	_cloud_retry_attempts = 0
@@ -346,10 +351,13 @@ func _sync_cloud_now(flush: bool) -> void:
 		return
 
 	var revision: int = int(config.get_value("platform", "cloud_revision", 0))
+	var local_saved_at: int = int(config.get_value("platform", "local_saved_at", 0))
+	if local_saved_at <= 0:
+		local_saved_at = YandexGames.refresh_server_time()
 	var payload: Dictionary = {
 		"schema": CLOUD_SCHEMA,
 		"revision": revision,
-		"saved_at": YandexGames.refresh_server_time(),
+		"saved_at": local_saved_at,
 		"config": _config_to_dictionary(config)
 	}
 	_cloud_save_in_flight = true
@@ -392,7 +400,13 @@ func _bump_cloud_revision() -> void:
 	var config: ConfigFile = ConfigFile.new()
 	config.load(SETTINGS_PATH)
 	var revision: int = int(config.get_value("platform", "cloud_revision", 0)) + 1
+	var saved_at: int = 0
+	if YandexGames.sdk_ready:
+		saved_at = YandexGames.refresh_server_time()
+	if saved_at <= 0:
+		saved_at = int(Time.get_unix_time_from_system() * 1000.0)
 	config.set_value("platform", "cloud_revision", revision)
+	config.set_value("platform", "local_saved_at", saved_at)
 	config.save(SETTINGS_PATH)
 
 
@@ -447,9 +461,19 @@ func _merge_cloud_into_local_file() -> bool:
 	var local: ConfigFile = ConfigFile.new()
 	var local_loaded: bool = local.load(SETTINGS_PATH) == OK
 	var local_revision: int = int(local.get_value("platform", "cloud_revision", 0)) if local_loaded else 0
+	var local_saved_at: int = int(local.get_value("platform", "local_saved_at", 0)) if local_loaded else 0
 	var cloud_revision: int = int(cloud.get("revision", 0))
-	if local_loaded and local_revision >= cloud_revision:
-		return false
+	var cloud_saved_at: int = int(cloud.get("saved_at", 0))
+
+	if local_loaded:
+		if local_saved_at > 0 and cloud_saved_at > 0:
+			if local_saved_at > cloud_saved_at:
+				return false
+			if local_saved_at == cloud_saved_at and local_revision >= cloud_revision:
+				return false
+		elif local_revision >= cloud_revision:
+			# Backward compatibility for saves made before timestamps were stored.
+			return false
 
 	var cloud_config: Dictionary = cloud_config_value as Dictionary
 	for section_key in cloud_config.keys():
@@ -460,6 +484,8 @@ func _merge_cloud_into_local_file() -> bool:
 		for key_value in (section_value as Dictionary).keys():
 			local.set_value(section_name, String(key_value), (section_value as Dictionary)[key_value])
 	local.set_value("platform", "cloud_revision", cloud_revision)
+	if cloud_saved_at > 0:
+		local.set_value("platform", "local_saved_at", cloud_saved_at)
 	local.save(SETTINGS_PATH)
 	return true
 
