@@ -1,8 +1,12 @@
 extends "res://scripts/app_runtime_full.gd"
 
 # Temporary preview helpers for production review:
-# - F cycles through all locations without changing campaign progress;
+# - F cycles through locations through their pre-location comic transition;
+# - preview transitions never change or save campaign progress;
 # - settings no longer exposes intro replay.
+
+var preview_transition_active: bool = false
+var preview_unlock_all: bool = false
 
 
 func _input(event: InputEvent) -> void:
@@ -44,12 +48,47 @@ func _debug_cycle_location() -> void:
 	var next_index: int = (current_index + 1) % order.size()
 	var next_location_id: String = String(order[next_index])
 
-	# Preview only: do not unlock, complete or save anything.
-	# Jump straight into level 1 so backgrounds/UI can be reviewed quickly.
 	current_level_id = next_location_id
 	current_stage_number = 1
-	transition_target_id = ""
-	_start_game()
+	transition_target_id = next_location_id
+
+	# Forest has no inter-location transition. Cycling back to it previews the
+	# original opening comic instead.
+	if next_location_id == "forest":
+		preview_transition_active = false
+		preview_unlock_all = false
+		_show_intro(0)
+		return
+
+	# Temporarily bypass progression only while the inherited transition screen is
+	# being built. No completion flags or save data are changed.
+	preview_transition_active = true
+	preview_unlock_all = true
+	_show_location_transition(next_location_id)
+	preview_unlock_all = false
+
+
+func _is_location_unlocked(location_id: String) -> bool:
+	if preview_unlock_all:
+		return true
+	return super._is_location_unlocked(location_id)
+
+
+func _finish_location_transition() -> void:
+	if preview_transition_active:
+		preview_transition_active = false
+		preview_unlock_all = false
+		transition_target_id = ""
+		current_stage_number = 1
+		_start_game()
+		return
+	super._finish_location_transition()
+
+
+func _show_level_select() -> void:
+	preview_transition_active = false
+	preview_unlock_all = false
+	super._show_level_select()
 
 
 func _find_button_by_text(root: Node, wanted_text: String) -> Button:
