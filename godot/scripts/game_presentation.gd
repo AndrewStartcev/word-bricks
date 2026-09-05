@@ -3,6 +3,12 @@ extends "res://scripts/game.gd"
 # Presentation-only overrides. Core gameplay remains in game.gd.
 # The application shell owns pause/settings/result windows.
 
+var presentation_font: SystemFont = SystemFont.new()
+
+
+func _init() -> void:
+	presentation_font.font_names = PackedStringArray(["Rubik", "Nunito", "Trebuchet MS", "Verdana", "Arial"])
+
 
 func _draw_owl() -> void:
 	var texture: Texture2D = OWL_IDLE
@@ -39,7 +45,6 @@ func _draw_left_panel() -> void:
 	draw_texture_rect(ICON_CLUE, Rect2(150.0, 399.0, 24.0, 24.0), false)
 	_draw_text(CLUES[word_index], Vector2(184.0, 420.0), 18, Color(0.82, 0.89, 0.98))
 
-	# Small chapter progress markers instead of tutorial paragraphs / locked text.
 	var marker_y: float = 488.0
 	_draw_text("Прогресс", Vector2(150.0, marker_y), 16, Color(0.52, 0.66, 0.82))
 	for i in range(WORDS.size()):
@@ -66,7 +71,6 @@ func _draw_right_panel() -> void:
 	_draw_panel(preview_rect, Color(0.004, 0.020, 0.055, 0.90), Color(0.10, 0.31, 0.55, 0.62))
 	_draw_next_piece(preview_rect)
 
-	# Compact hint action. No explanatory paragraph: the mechanic is self-evident.
 	var hint_visual: Rect2 = Rect2(1015.0, 392.0, 265.0, 72.0)
 	_draw_panel(hint_visual, Color(0.020, 0.082, 0.155, 0.97), Color(0.18, 0.43, 0.68, 0.72))
 	draw_texture_rect(ICON_HINT, Rect2(1032.0, 409.0, 36.0, 36.0), false)
@@ -75,15 +79,29 @@ func _draw_right_panel() -> void:
 
 
 func _draw_controls() -> void:
-	# Controls are intentionally not printed on the game screen.
 	pass
 
 
 func _draw_settings_overlay() -> void:
-	# app_runtime.gd renders the settings modal with real Control nodes.
 	pass
 
 
 func _draw_overlay(_title: String, _subtitle: String) -> void:
-	# app_runtime.gd renders pause, victory and defeat windows.
 	pass
+
+
+func _draw_text(text: String, baseline: Vector2, size: int, color: Color) -> void:
+	draw_string(presentation_font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size, color)
+
+
+func _draw_text_centered(text: String, rect: Rect2, size: int, color: Color) -> void:
+	var baseline_y: float = rect.position.y + rect.size.y * 0.5 + float(size) * 0.36
+	draw_string(
+		presentation_font,
+		Vector2(rect.position.x, baseline_y),
+		text,
+		HORIZONTAL_ALIGNMENT_CENTER,
+		rect.size.x,
+		size,
+		color
+	)
