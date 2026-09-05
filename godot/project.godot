@@ -10,7 +10,7 @@ run/main_scene="res://main.tscn"
 
 [autoload]
 
-YandexGames="*res://scripts/yandex_games_service.gd"
+YandexGames="*res://scripts/yandex_games_service_hardened.gd"
 
 [display]
 
