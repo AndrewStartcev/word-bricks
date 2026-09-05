@@ -5,13 +5,25 @@ extends "res://scripts/app_runtime_full.gd"
 
 const CLOUD_SCHEMA: int = 1
 const CLOUD_DEBOUNCE_SECONDS: float = 2.0
+const CLOUD_RETRY_BASE_SECONDS: float = 3.0
+const CLOUD_RETRY_MAX_SECONDS: float = 30.0
+const INTERSTITIAL_MIN_GAMEPLAY_SECONDS: float = 180.0
+const INTERSTITIAL_MIN_COMPLETED_LEVELS: int = 2
 
 var _cloud_sync_enabled: bool = false
 var _cloud_dirty: bool = false
 var _cloud_timer: float = 0.0
+var _cloud_save_in_flight: bool = false
+var _cloud_revision_in_flight: int = -1
+var _cloud_retry_attempts: int = 0
+
 var _platform_pause_active: bool = false
 var _resume_game_after_platform_pause: bool = false
+var _ad_pause_active: bool = false
+var _resume_game_after_ad: bool = false
 var _interstitial_pending: bool = false
+var _gameplay_seconds_since_interstitial: float = 0.0
+var _completed_levels_since_interstitial: int = 0
 
 
 func _ready() -> void:
@@ -40,7 +52,14 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	if not _cloud_sync_enabled or not _cloud_dirty:
+
+	if current_screen == "game" and game != null and is_instance_valid(game):
+		var paused: bool = bool(game.get("manual_paused")) or bool(game.get("focus_paused")) or not current_modal.is_empty()
+		var finished: bool = bool(game.get("game_over")) or bool(game.get("chapter_complete"))
+		if not paused and not finished and not _platform_pause_active and not _ad_pause_active:
+			_gameplay_seconds_since_interstitial += delta
+
+	if not _cloud_sync_enabled or not _cloud_dirty or _cloud_save_in_flight:
 		return
 	_cloud_timer -= delta
 	if _cloud_timer <= 0.0:
@@ -84,6 +103,8 @@ func _show_pause_modal() -> void:
 
 func _show_result_modal(victory: bool) -> void:
 	YandexGames.gameplay_stop()
+	if victory:
+		_completed_levels_since_interstitial += 1
 	super._show_result_modal(victory)
 
 
@@ -108,22 +129,23 @@ func _show_settings_modal(from_game: bool) -> void:
 
 func _resume_game() -> void:
 	super._resume_game()
-	if current_screen == "game" and current_modal.is_empty() and not _platform_pause_active:
+	if current_screen == "game" and current_modal.is_empty() and not _platform_pause_active and not _ad_pause_active:
 		YandexGames.gameplay_start()
 
 
 func _restart_game() -> void:
 	super._restart_game()
-	if current_screen == "game" and not _platform_pause_active:
+	if current_screen == "game" and not _platform_pause_active and not _ad_pause_active:
 		YandexGames.gameplay_start()
 
 
 func _on_levels_pressed() -> void:
 	# Fullscreen ads are requested only after an explicit user action at a logical
-	# break, never during active gameplay. Yandex controls the actual frequency.
+	# break. Our own cooldown prevents an ad request after every short round; Yandex
+	# still controls whether an eligible request is actually shown.
 	if current_screen == "game" and game != null and is_instance_valid(game) and bool(game.get("chapter_complete")):
 		_ui_click()
-		if YandexGames.sdk_ready and not _interstitial_pending:
+		if _can_request_interstitial():
 			_interstitial_pending = true
 			YandexGames.gameplay_stop()
 			YandexGames.show_fullscreen_ad()
@@ -132,6 +154,13 @@ func _on_levels_pressed() -> void:
 		return
 
 	super._on_levels_pressed()
+
+
+func _can_request_interstitial() -> bool:
+	return YandexGames.sdk_ready \
+		and not _interstitial_pending \
+		and _completed_levels_since_interstitial >= INTERSTITIAL_MIN_COMPLETED_LEVELS \
+		and _gameplay_seconds_since_interstitial >= INTERSTITIAL_MIN_GAMEPLAY_SECONDS
 
 
 func request_rewarded_hint() -> void:
@@ -174,12 +203,20 @@ func _connect_platform_signals() -> void:
 		YandexGames.external_pause.connect(_on_platform_pause)
 	if not YandexGames.external_resume.is_connected(_on_platform_resume):
 		YandexGames.external_resume.connect(_on_platform_resume)
+	if not YandexGames.fullscreen_opened.is_connected(_on_ad_opened):
+		YandexGames.fullscreen_opened.connect(_on_ad_opened)
 	if not YandexGames.fullscreen_closed.is_connected(_on_fullscreen_closed):
 		YandexGames.fullscreen_closed.connect(_on_fullscreen_closed)
+	if not YandexGames.rewarded_opened.is_connected(_on_rewarded_opened):
+		YandexGames.rewarded_opened.connect(_on_rewarded_opened)
 	if not YandexGames.rewarded.is_connected(_on_rewarded):
 		YandexGames.rewarded.connect(_on_rewarded)
 	if not YandexGames.rewarded_closed.is_connected(_on_rewarded_closed):
 		YandexGames.rewarded_closed.connect(_on_rewarded_closed)
+	if not YandexGames.cloud_saved.is_connected(_on_cloud_saved):
+		YandexGames.cloud_saved.connect(_on_cloud_saved)
+	if not YandexGames.account_changed.is_connected(_on_account_changed):
+		YandexGames.account_changed.connect(_on_account_changed)
 
 
 func _on_platform_pause() -> void:
@@ -210,16 +247,57 @@ func _on_platform_resume() -> void:
 	if app_audio != null:
 		app_audio.set_suspended("yandex_platform", false)
 
-	if _resume_game_after_platform_pause and current_screen == "game" and current_modal.is_empty():
+	var resume_from_ad: bool = _resume_game_after_ad and not _ad_pause_active
+	if (_resume_game_after_platform_pause or resume_from_ad) and current_screen == "game" and current_modal.is_empty():
 		_pause_game(false)
 		YandexGames.gameplay_start()
 	_resume_game_after_platform_pause = false
+	if resume_from_ad:
+		_resume_game_after_ad = false
+
+
+func _on_ad_opened() -> void:
+	_begin_ad_pause()
+
+
+func _on_rewarded_opened(_tag: String) -> void:
+	_begin_ad_pause()
+
+
+func _begin_ad_pause() -> void:
+	_ad_pause_active = true
+	_resume_game_after_ad = false
+	if app_audio != null:
+		app_audio.set_suspended("yandex_ad", true)
+
+	if current_screen == "game" and game != null and is_instance_valid(game):
+		var already_paused: bool = bool(game.get("manual_paused")) or not current_modal.is_empty()
+		var finished: bool = bool(game.get("game_over")) or bool(game.get("chapter_complete"))
+		_resume_game_after_ad = not already_paused and not finished
+		if _resume_game_after_ad:
+			_pause_game(true)
+
+
+func _end_ad_pause() -> void:
+	_ad_pause_active = false
+	if app_audio != null:
+		app_audio.set_suspended("yandex_ad", false)
+
+	if _resume_game_after_ad and not _platform_pause_active and current_screen == "game" and current_modal.is_empty():
+		_pause_game(false)
+		YandexGames.gameplay_start()
+		_resume_game_after_ad = false
 
 
 func _on_fullscreen_closed(_was_shown: bool) -> void:
+	_end_ad_pause()
 	if not _interstitial_pending:
 		return
 	_interstitial_pending = false
+	# Reset on every completed request, including wasShown=false, so the app does
+	# not hammer the SDK again on the very next short level.
+	_gameplay_seconds_since_interstitial = 0.0
+	_completed_levels_since_interstitial = 0
 	_continue_after_completed_level()
 
 
@@ -232,7 +310,8 @@ func _on_rewarded(tag: String) -> void:
 
 
 func _on_rewarded_closed(_tag: String, _was_shown: bool) -> void:
-	if current_screen == "game" and game != null and is_instance_valid(game) and current_modal.is_empty() and not _platform_pause_active:
+	_end_ad_pause()
+	if current_screen == "game" and game != null and is_instance_valid(game) and current_modal.is_empty() and not _platform_pause_active and not _ad_pause_active:
 		YandexGames.gameplay_start()
 
 
@@ -245,17 +324,25 @@ func _save_local_state() -> void:
 
 
 func _queue_cloud_sync() -> void:
-	if not YandexGames.sdk_ready or not YandexGames.player_ready:
-		return
+	# Mark dirty even when the SDK/player is temporarily unavailable. _process()
+	# will retry once the service becomes ready instead of silently losing a save.
 	_cloud_dirty = true
 	_cloud_timer = CLOUD_DEBOUNCE_SECONDS
+	_cloud_retry_attempts = 0
 
 
 func _sync_cloud_now(flush: bool) -> void:
-	if not YandexGames.sdk_ready or not YandexGames.player_ready:
+	if _cloud_save_in_flight:
 		return
+	if not YandexGames.sdk_ready or not YandexGames.player_ready:
+		_cloud_dirty = true
+		_cloud_timer = CLOUD_RETRY_BASE_SECONDS
+		return
+
 	var config: ConfigFile = ConfigFile.new()
 	if config.load(SETTINGS_PATH) != OK:
+		_cloud_dirty = true
+		_cloud_timer = CLOUD_RETRY_BASE_SECONDS
 		return
 
 	var revision: int = int(config.get_value("platform", "cloud_revision", 0))
@@ -265,9 +352,40 @@ func _sync_cloud_now(flush: bool) -> void:
 		"saved_at": YandexGames.refresh_server_time(),
 		"config": _config_to_dictionary(config)
 	}
+	_cloud_save_in_flight = true
+	_cloud_revision_in_flight = revision
 	YandexGames.save_cloud(payload, flush)
-	_cloud_dirty = false
 	_cloud_timer = 0.0
+
+
+func _on_cloud_saved(success: bool) -> void:
+	var sent_revision: int = _cloud_revision_in_flight
+	_cloud_save_in_flight = false
+	_cloud_revision_in_flight = -1
+
+	if success:
+		_cloud_retry_attempts = 0
+		var current_revision: int = _current_cloud_revision()
+		if current_revision <= sent_revision:
+			_cloud_dirty = false
+			_cloud_timer = 0.0
+		else:
+			# Local state changed while the previous request was in flight.
+			_cloud_dirty = true
+			_cloud_timer = CLOUD_DEBOUNCE_SECONDS
+		return
+
+	_cloud_dirty = true
+	_cloud_retry_attempts += 1
+	var exponent: int = mini(_cloud_retry_attempts - 1, 4)
+	_cloud_timer = minf(CLOUD_RETRY_MAX_SECONDS, CLOUD_RETRY_BASE_SECONDS * pow(2.0, float(exponent)))
+
+
+func _current_cloud_revision() -> int:
+	var config: ConfigFile = ConfigFile.new()
+	if config.load(SETTINGS_PATH) != OK:
+		return 0
+	return int(config.get_value("platform", "cloud_revision", 0))
 
 
 func _bump_cloud_revision() -> void:
@@ -276,6 +394,44 @@ func _bump_cloud_revision() -> void:
 	var revision: int = int(config.get_value("platform", "cloud_revision", 0)) + 1
 	config.set_value("platform", "cloud_revision", revision)
 	config.save(SETTINGS_PATH)
+
+
+func _on_account_changed() -> void:
+	# Never replace an active round from underneath the player. If an account
+	# changes mid-game, the current local session remains authoritative and is
+	# queued to the newly selected Player after the next save boundary.
+	if current_screen == "game":
+		_queue_cloud_sync()
+		return
+
+	_cloud_save_in_flight = false
+	_cloud_revision_in_flight = -1
+	var cloud_applied: bool = _merge_cloud_into_local_file()
+	if cloud_applied:
+		var sync_was_enabled: bool = _cloud_sync_enabled
+		_cloud_sync_enabled = false
+		_load_local_state()
+		_cloud_sync_enabled = sync_was_enabled
+		_refresh_screen_after_account_change()
+	else:
+		_queue_cloud_sync()
+
+
+func _refresh_screen_after_account_change() -> void:
+	match current_screen:
+		"menu":
+			_show_main_menu()
+		"locations":
+			_show_level_select()
+		"location_levels":
+			_show_location_levels(current_level_id)
+		"chapter_transition":
+			var target_id: String = transition_target_id if not transition_target_id.is_empty() else current_level_id
+			_show_location_transition(target_id)
+		"intro":
+			_show_intro(intro_index)
+		"finale":
+			_show_finale(finale_page)
 
 
 func _merge_cloud_into_local_file() -> bool:
