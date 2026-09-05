@@ -1,0 +1,171 @@
+{
+  "version": 2,
+  "music": {
+    "path": "res://assets/audio/music/music_forest_loop.ogg",
+    "title": "Peaceful Forest",
+    "author": "Samza",
+    "license": "CC0-1.0",
+    "bus": "Music",
+    "volume_db": -5,
+    "loop": true,
+    "loop_offset": 0.0,
+    "duration_seconds": 61.109365,
+    "source_url": "https://opengameart.org/content/peaceful-forest",
+    "source_download": "https://opengameart.org/sites/default/files/Peaceful%20Forest.wav",
+    "source_sha256": "acf1576167caffddf87599bec49d1d37f83c4dd0b11c7d744cc12ea30232ebc0",
+    "sha256": "b919dc49d93ea68641c3c8f08e470954019bd9ed68e31ed39bf426292a157884"
+  },
+  "sfx_source": {
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "url": "https://kenney.nl/assets/interface-sounds",
+    "download_url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+    "archive_sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232"
+  },
+  "sfx": [
+    {
+      "event": "ui_click",
+      "path": "res://assets/audio/sfx/sfx_ui_click.wav",
+      "bus": "SFX",
+      "volume_db": -15,
+      "cooldown_ms": 80,
+      "loop": false,
+      "source_file": "click_001.ogg",
+      "source_sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9",
+      "sha256": "4f86d0f33c4e0e818b0ba64f9cd18fabcfe23b3dbb742896857010e96a98c11c",
+      "duration_seconds": 0.09712
+    },
+    {
+      "event": "ui_back",
+      "path": "res://assets/audio/sfx/sfx_ui_back.wav",
+      "bus": "SFX",
+      "volume_db": -15,
+      "cooldown_ms": 100,
+      "loop": false,
+      "source_file": "back_001.ogg",
+      "source_sha256": "07db973f79f6ae0f2edc34561e7592e24d0577455919fb602cb8ecc0da991dcf",
+      "sha256": "c993d30ec30479e8e389b3d7e85952b71bf1a98f28a878ec87e4b19a5ae623b2",
+      "duration_seconds": 0.060975
+    },
+    {
+      "event": "piece_move",
+      "path": "res://assets/audio/sfx/sfx_piece_move.wav",
+      "bus": "SFX",
+      "volume_db": -23,
+      "cooldown_ms": 65,
+      "loop": false,
+      "source_file": "tick_001.ogg",
+      "source_sha256": "9d057b918024c787bbe6c00beed13a7ef72a3fa0c259add3cef36582792f4230",
+      "sha256": "375c232612fb73eb446ed987fd9ebc437434c680cc303bd368b972d69cb44076",
+      "duration_seconds": 0.044989
+    },
+    {
+      "event": "piece_rotate",
+      "path": "res://assets/audio/sfx/sfx_piece_rotate.wav",
+      "bus": "SFX",
+      "volume_db": -19,
+      "cooldown_ms": 90,
+      "loop": false,
+      "source_file": "switch_001.ogg",
+      "source_sha256": "3b74efad87f1e69dbd1d05c5ad952ab90859b5a3d11da6ec5bd79b4f03b42afa",
+      "sha256": "92b00969ca56a15c684f3fb4e3b270c2db9cbae8b89222405da11279b8490834",
+      "duration_seconds": 0.614762
+    },
+    {
+      "event": "piece_lock",
+      "path": "res://assets/audio/sfx/sfx_piece_lock.wav",
+      "bus": "SFX",
+      "volume_db": -13,
+      "cooldown_ms": 100,
+      "loop": false,
+      "source_file": "drop_002.ogg",
+      "source_sha256": "4ac4d1cef7e936965cbf795852ca2020300b9e2ba7daa59f2bf4f1f7bf416218",
+      "sha256": "a42acf23f1a4e63c355db9b2f3e0a5b55ef9a0f03631f59f2965fc20bbb8f755",
+      "duration_seconds": 0.188186
+    },
+    {
+      "event": "line_clear",
+      "path": "res://assets/audio/sfx/sfx_line_clear.wav",
+      "bus": "SFX",
+      "volume_db": -12,
+      "cooldown_ms": 180,
+      "loop": false,
+      "source_file": "glass_001.ogg",
+      "source_sha256": "183eebee20eb0a532b0b85104d139cbf2673eb66d95c3cc733ac9ea98362e7e8",
+      "sha256": "68605ed7cb7e30ed3b7ba1ee588d2fcbe67070d78e8f2b6e599eeb363851ac46",
+      "duration_seconds": 0.275533
+    },
+    {
+      "event": "word_complete",
+      "path": "res://assets/audio/sfx/sfx_word_complete.wav",
+      "bus": "SFX",
+      "volume_db": -10,
+      "cooldown_ms": 400,
+      "loop": false,
+      "source_file": "confirmation_002.ogg",
+      "source_sha256": "33b17a9a9a2397c62b285c52c33a907fdffb476909c99e42dde603f6a7a8b12c",
+      "sha256": "1b81259e38c9e53eebb48718581bdd10e7c8b56e259a3e3aae888d4bb4ea9d0e",
+      "duration_seconds": 0.539002
+    },
+    {
+      "event": "chapter_complete",
+      "path": "res://assets/audio/sfx/sfx_chapter_complete.wav",
+      "bus": "SFX",
+      "volume_db": -9,
+      "cooldown_ms": 1000,
+      "loop": false,
+      "source_file": "confirmation_004.ogg",
+      "source_sha256": "568967a3d9f8a8f6af54ea01729c4882284308f2a27d78c07ffd7ee0d6951661",
+      "sha256": "57b6a61b27caca642006860cdcab3798bed293398a6b6838053b26b4c5a54eb9",
+      "duration_seconds": 0.490408
+    },
+    {
+      "event": "hint",
+      "path": "res://assets/audio/sfx/sfx_hint.wav",
+      "bus": "SFX",
+      "volume_db": -14,
+      "cooldown_ms": 250,
+      "loop": false,
+      "source_file": "question_001.ogg",
+      "source_sha256": "abb8f9e4eb2071491b0b15f84ee302386b1847609310c1b000ae174639a6cc5a",
+      "sha256": "3e38e762107f5b365a581c5b52f78d9ffca035118d80b7cde497263e3c73129e",
+      "duration_seconds": 0.49068
+    },
+    {
+      "event": "invalid",
+      "path": "res://assets/audio/sfx/sfx_invalid.wav",
+      "bus": "SFX",
+      "volume_db": -20,
+      "cooldown_ms": 300,
+      "loop": false,
+      "source_file": "error_002.ogg",
+      "source_sha256": "76810ec365f41078fd0507101da5bb7b8730fe011dde43908329fdabd8575e79",
+      "sha256": "7d0e1b94efbd1a5ae6de3f84878dd48d3ddce274924689f2e17b8bffb31d2734",
+      "duration_seconds": 0.165442
+    },
+    {
+      "event": "defeat",
+      "path": "res://assets/audio/sfx/sfx_defeat.wav",
+      "bus": "SFX",
+      "volume_db": -13,
+      "cooldown_ms": 1000,
+      "loop": false,
+      "source_file": "minimize_004.ogg",
+      "source_sha256": "fcfe6fbb03a728e90b907f34d2ec7bf3ea1857397c3e47ee01990c1be059e4f6",
+      "sha256": "657711605703771f7a316f819e07cff97229cef9c720f5c76b4f275f479dd52e",
+      "duration_seconds": 0.417959
+    },
+    {
+      "event": "coin_collect",
+      "path": "res://assets/audio/sfx/sfx_coin_collect.wav",
+      "bus": "SFX",
+      "volume_db": -16,
+      "cooldown_ms": 80,
+      "loop": false,
+      "source_file": "pluck_001.ogg",
+      "source_sha256": "be97ec4893a02d6eccfb678daa76c83e34cb2583b834ec2593d2641def739fa4",
+      "sha256": "a6f1c86f030ec59feda001bf0fb086655f0a43e3b2473382f99f130508f5204b",
+      "duration_seconds": 0.099524
+    }
+  ]
+}
