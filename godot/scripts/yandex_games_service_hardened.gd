@@ -4,11 +4,20 @@ extends "res://scripts/yandex_games_service.gd"
 # Patches ad callbacks so any SDK error always releases the game flow instead of
 # leaving the runtime waiting forever for an onClose callback.
 
+signal account_selection_opened
+
 
 func _ready() -> void:
 	super._ready()
 	if OS.has_feature("web"):
 		_eval(_hardening_patch_source())
+
+
+func _handle_event(event: Dictionary) -> void:
+	if String(event.get("type", "")) == "account_selection_opened":
+		account_selection_opened.emit()
+		return
+	super._handle_event(event)
 
 
 func _hardening_patch_source() -> String:
@@ -79,5 +88,21 @@ func _hardening_patch_source() -> String:
             finish(false);
         }
     };
+
+    const installAccountOpenListener = () => {
+        if (!bridge.ysdk || !bridge.ysdk.EVENTS || bridge.__accountOpenListenerApplied) return false;
+        const opened = bridge.ysdk.EVENTS.ACCOUNT_SELECTION_DIALOG_OPENED;
+        if (!opened) return false;
+        bridge.__accountOpenListenerApplied = true;
+        bridge.ysdk.on(opened, () => bridge.push('account_selection_opened'));
+        return true;
+    };
+
+    if (!installAccountOpenListener()) {
+        const timer = setInterval(() => {
+            if (installAccountOpenListener()) clearInterval(timer);
+        }, 100);
+        setTimeout(() => clearInterval(timer), 10000);
+    }
 })();
 """
