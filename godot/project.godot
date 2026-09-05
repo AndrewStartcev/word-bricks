@@ -1,11 +1,11 @@
 ; Engine configuration file.
-; Godot 4.x gameplay prototype for «Словопад».
+; Godot 4.x gameplay prototype for «Словопад: Магия слов».
 
 config_version=5
 
 [application]
 
-config/name="Словопад"
+config/name="Словопад: Магия слов"
 run/main_scene="res://main.tscn"
 
 [autoload]
