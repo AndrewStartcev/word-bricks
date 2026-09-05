@@ -14,6 +14,7 @@ signal rewarded_closed(tag: String, was_shown: bool)
 signal cloud_saved(success: bool)
 signal review_finished(sent: bool)
 signal shortcut_finished(accepted: bool)
+signal account_changed
 
 const SUPPORTED_LANGUAGES: Array[String] = ["ru"]
 const DEFAULT_LANGUAGE: String = "ru"
@@ -26,6 +27,7 @@ var initialization_finished: bool = false
 var sdk_ready: bool = false
 var player_ready: bool = false
 var player_authorized: bool = false
+var external_paused: bool = false
 var detected_language: String = DEFAULT_LANGUAGE
 var effective_language: String = DEFAULT_LANGUAGE
 var cloud_data: Dictionary = {}
@@ -156,6 +158,7 @@ func _poll_js_state() -> void:
 	sdk_ready = sdk_state == "ready"
 	player_ready = bool(state.get("playerReady", false))
 	player_authorized = bool(state.get("playerAuthorized", false))
+	external_paused = bool(state.get("platformPaused", external_paused))
 	detected_language = String(state.get("language", DEFAULT_LANGUAGE))
 	effective_language = String(state.get("effectiveLanguage", DEFAULT_LANGUAGE))
 	server_time_ms = int(state.get("serverTime", server_time_ms))
@@ -182,8 +185,10 @@ func _handle_event(event: Dictionary) -> void:
 	var event_type: String = String(event.get("type", ""))
 	match event_type:
 		"pause":
+			external_paused = true
 			external_pause.emit()
 		"resume":
+			external_paused = false
 			external_resume.emit()
 		"fullscreen_open":
 			fullscreen_opened.emit()
@@ -201,6 +206,8 @@ func _handle_event(event: Dictionary) -> void:
 			review_finished.emit(bool(event.get("sent", false)))
 		"shortcut_finished":
 			shortcut_finished.emit(bool(event.get("accepted", false)))
+		"account_changed":
+			account_changed.emit()
 
 
 func _finish_initialization(success: bool, error_text: String) -> void:
@@ -233,6 +240,7 @@ func _bridge_source() -> String:
             sdkState: 'loading',
             playerReady: false,
             playerAuthorized: false,
+            platformPaused: false,
             language: 'ru',
             effectiveLanguage: 'ru',
             cloudData: {},
@@ -246,6 +254,38 @@ func _bridge_source() -> String:
 
         snapshot() {
             return Object.assign({}, this.state, { events: this.events.splice(0) });
+        },
+
+        installBrowserGuards() {
+            document.documentElement.style.overflow = 'hidden';
+            document.documentElement.style.overscrollBehavior = 'none';
+            if (document.body) {
+                document.body.style.overflow = 'hidden';
+                document.body.style.overscrollBehavior = 'none';
+                document.body.style.margin = '0';
+            }
+            document.addEventListener('contextmenu', (event) => {
+                const target = event.target;
+                if (target && (target.tagName === 'CANVAS' || (target.closest && target.closest('canvas')))) {
+                    event.preventDefault();
+                }
+            }, true);
+            const tuneCanvas = () => {
+                const canvas = document.querySelector('canvas');
+                if (canvas) {
+                    canvas.style.touchAction = 'none';
+                    canvas.style.userSelect = 'none';
+                    canvas.setAttribute('draggable', 'false');
+                    return true;
+                }
+                return false;
+            };
+            if (!tuneCanvas()) {
+                const timer = setInterval(() => {
+                    if (tuneCanvas()) clearInterval(timer);
+                }, 100);
+                setTimeout(() => clearInterval(timer), 10000);
+            }
         },
 
         async loadSdk() {
@@ -275,34 +315,56 @@ func _bridge_source() -> String:
             }
         },
 
+        async refreshPlayerAndCloud() {
+            try {
+                this.player = await this.ysdk.getPlayer();
+                this.state.playerReady = !!this.player;
+                this.state.playerAuthorized = !!(this.player && this.player.isAuthorized && this.player.isAuthorized());
+                if (this.player) {
+                    const data = await this.player.getData(['slovopad_save']);
+                    this.state.cloudData = (data && data.slovopad_save) ? data.slovopad_save : {};
+                }
+            } catch (playerError) {
+                this.state.playerReady = false;
+                this.state.lastError = 'Player init: ' + String(playerError && playerError.message ? playerError.message : playerError);
+            }
+        },
+
         async init() {
             try {
+                this.installBrowserGuards();
                 await this.loadSdk();
                 this.ysdk = await window.YaGames.init();
 
-                // Requirement 2.14: language must be detected through the SDK at launch,
-                // even for a single-language game.
+                // Requirement 2.14: detect language through SDK at launch even
+                // when the draft declares a single language.
                 const detected = (this.ysdk.environment && this.ysdk.environment.i18n && this.ysdk.environment.i18n.lang) || 'ru';
                 this.state.language = String(detected).toLowerCase();
                 this.state.effectiveLanguage = this.supportedLanguages.includes(this.state.language) ? this.state.language : 'ru';
                 this.state.serverTime = Number(this.ysdk.serverTime ? this.ysdk.serverTime() : Date.now());
 
-                this.ysdk.on('game_api_pause', () => this.push('pause'));
-                this.ysdk.on('game_api_resume', () => this.push('resume'));
+                this.ysdk.on('game_api_pause', () => {
+                    this.state.platformPaused = true;
+                    this.push('pause');
+                });
+                this.ysdk.on('game_api_resume', () => {
+                    this.state.platformPaused = false;
+                    this.push('resume');
+                });
 
+                // When the user switches account through a platform dialog,
+                // refresh the Player object and its cloud state.
                 try {
-                    this.player = await this.ysdk.getPlayer();
-                    this.state.playerReady = !!this.player;
-                    this.state.playerAuthorized = !!(this.player && this.player.isAuthorized && this.player.isAuthorized());
-                    if (this.player) {
-                        const data = await this.player.getData(['slovopad_save']);
-                        this.state.cloudData = (data && data.slovopad_save) ? data.slovopad_save : {};
+                    const events = this.ysdk.EVENTS || {};
+                    if (events.ACCOUNT_SELECTION_DIALOG_CLOSED) {
+                        this.ysdk.on(events.ACCOUNT_SELECTION_DIALOG_CLOSED, async () => {
+                            await this.refreshPlayerAndCloud();
+                            this.push('account_changed');
+                        });
                     }
-                } catch (playerError) {
-                    this.state.playerReady = false;
-                    this.state.lastError = 'Player init: ' + String(playerError && playerError.message ? playerError.message : playerError);
-                }
+                } catch (_) {}
 
+                await this.refreshPlayerAndCloud();
                 this.state.sdkState = 'ready';
             } catch (error) {
                 this.state.sdkState = 'failed';
@@ -395,9 +457,8 @@ func _bridge_source() -> String:
             if (!this.ysdk || !this.ysdk.auth) return;
             try {
                 await this.ysdk.auth.openAuthDialog();
-                this.player = await this.ysdk.getPlayer();
-                this.state.playerReady = !!this.player;
-                this.state.playerAuthorized = !!(this.player && this.player.isAuthorized && this.player.isAuthorized());
+                await this.refreshPlayerAndCloud();
+                this.push('account_changed');
             } catch (_) {}
         },
 
