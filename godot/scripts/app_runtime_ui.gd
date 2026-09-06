@@ -104,6 +104,7 @@ func _show_pause_modal() -> void:
 	if current_modal != "pause":
 		return
 	_tune_modal_tree(modal_layer, "pause", false)
+	call_deferred("_recenter_active_modal")
 
 
 func _show_settings_modal(from_game: bool) -> void:
@@ -111,6 +112,7 @@ func _show_settings_modal(from_game: bool) -> void:
 	if current_modal != "settings":
 		return
 	_tune_modal_tree(modal_layer, "settings", false)
+	call_deferred("_recenter_active_modal")
 
 
 func _show_result_modal(victory: bool) -> void:
@@ -118,6 +120,7 @@ func _show_result_modal(victory: bool) -> void:
 	if current_modal != ("victory" if victory else "defeat"):
 		return
 	_tune_modal_tree(modal_layer, "result", victory)
+	call_deferred("_recenter_active_modal")
 
 
 func _button(text: String, variant: String, _icon: Texture2D = null, height: float = 60.0) -> Button:
@@ -179,9 +182,39 @@ func _modal_panel(panel_size: Vector2) -> PanelContainer:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.custom_minimum_size = panel_size
 	panel.add_theme_stylebox_override("panel", _panel_texture_box(texture))
-	_center_control(panel)
+	panel.anchor_left = 0.0
+	panel.anchor_top = 0.0
+	panel.anchor_right = 0.0
+	panel.anchor_bottom = 0.0
 	modal_layer.add_child(panel)
+	call_deferred("_center_modal_panel_exact", panel)
 	return panel
+
+
+func _modal_column(panel: PanelContainer) -> VBoxContainer:
+	var margin: MarginContainer = _margin(48, 42, 48, 42)
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(margin)
+	var column: VBoxContainer = VBoxContainer.new()
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", 12)
+	margin.add_child(column)
+	return column
+
+
+func _center_modal_panel_exact(panel: PanelContainer) -> void:
+	if panel == null or not is_instance_valid(panel) or modal_layer == null:
+		return
+	panel.position = (modal_layer.size - panel.size) * 0.5
+
+
+func _recenter_active_modal() -> void:
+	for child in modal_layer.get_children():
+		if child is PanelContainer:
+			_center_modal_panel_exact(child as PanelContainer)
 
 
 func _button_texture_box(texture: Texture2D, target_height: float) -> StyleBoxTexture:
@@ -225,6 +258,8 @@ func _tune_modal_tree(node: Node, mode: String, victory: bool) -> void:
 
 
 func _tune_modal_label(label: Label, mode: String, victory: bool) -> void:
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var text_value: String = label.text
 	if mode == "pause":
 		if text_value == "Пауза":
@@ -240,10 +275,10 @@ func _tune_modal_label(label: Label, mode: String, victory: bool) -> void:
 	elif mode == "result":
 		if text_value == "Глава пройдена!":
 			label.text = "Уровень пройден!"
-			label.add_theme_font_size_override("font_size", 46)
+			label.add_theme_font_size_override("font_size", 44)
 			label.add_theme_color_override("font_color", UI_PARCHMENT_TEXT)
 		elif text_value == "Партия окончена":
-			label.add_theme_font_size_override("font_size", 46)
+			label.add_theme_font_size_override("font_size", 44)
 			label.add_theme_color_override("font_color", UI_PARCHMENT_TEXT)
 		elif "/ 5 слов" in text_value:
 			label.visible = false
