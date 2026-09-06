@@ -69,31 +69,33 @@ func _drop_interval() -> float:
 
 func _draw_left_panel() -> void:
 	var panel: Rect2 = Rect2(125.0, 94.0, 330.0, 720.0)
-	_draw_panel(panel, Color(0.010, 0.045, 0.105, 0.91), Color(0.09, 0.38, 0.66, 0.76))
+	# Use the delivered stage-2 sidebar art here too; this level-aware override
+	# used to bypass the production skin from game_presentation.gd.
+	draw_texture_rect(UI_SIDEBAR_LEFT, panel, false)
 
 	draw_texture_rect(chapter_icon, Rect2(148.0, 120.0, 56.0, 56.0), false)
-	_draw_text("Локация %d" % chapter_number, Vector2(220.0, 140.0), 16, Color(0.67, 0.78, 0.92))
+	_draw_text("Локация %d" % chapter_number, Vector2(220.0, 140.0), 16, Color(0.72, 0.80, 0.91))
 	_draw_text(chapter_title, Vector2(220.0, 174.0), 29, Color("73e891"))
 	_draw_text("Уровень %d / %d" % [round_number, LEVEL_CATALOG.LEVELS_PER_LOCATION], Vector2(150.0, 214.0), 17, Color("7dc9ff"))
-	_draw_text(round_title, Vector2(150.0, 240.0), 16, Color(0.72, 0.82, 0.94))
+	_draw_text(round_title, Vector2(150.0, 240.0), 16, Color(0.78, 0.84, 0.94))
 
 	var total_words: int = maxi(1, chapter_words.size())
-	draw_rect(Rect2(150.0, 260.0, 280.0, 8.0), Color(0.008, 0.026, 0.060, 0.90), true)
+	draw_rect(Rect2(150.0, 260.0, 280.0, 8.0), Color(0.008, 0.026, 0.060, 0.88), true)
 	var ratio: float = float(completed_words.size()) / float(total_words)
 	draw_rect(Rect2(150.0, 260.0, 280.0 * ratio, 8.0), Color("55d979"), true)
 
-	draw_line(Vector2(145.0, 292.0), Vector2(435.0, 292.0), Color(0.14, 0.34, 0.58, 0.42), 1.0)
-	_draw_text("Слово", Vector2(150.0, 321.0), 17, Color(0.64, 0.76, 0.91))
+	draw_line(Vector2(145.0, 292.0), Vector2(435.0, 292.0), Color(0.45, 0.34, 0.18, 0.58), 1.0)
+	_draw_text("Слово", Vector2(150.0, 321.0), 17, Color(0.72, 0.80, 0.91))
 	_draw_current_word(Vector2(145.0, 336.0))
 
 	draw_texture_rect(ICON_CLUE, Rect2(150.0, 409.0, 24.0, 24.0), false)
 	var clue: String = ""
 	if word_index >= 0 and word_index < chapter_clues.size():
 		clue = String(chapter_clues[word_index])
-	_draw_text(clue, Vector2(184.0, 430.0), 16, Color(0.82, 0.89, 0.98))
+	_draw_text(clue, Vector2(184.0, 430.0), 16, Color(0.88, 0.91, 0.97))
 
 	var marker_y: float = 492.0
-	_draw_text("Слова уровня", Vector2(150.0, marker_y), 15, Color(0.52, 0.66, 0.82))
+	_draw_text("Слова уровня", Vector2(150.0, marker_y), 15, Color(0.62, 0.70, 0.82))
 	var marker_step: float = 280.0 / float(total_words)
 	for i in range(total_words):
 		var marker_rect: Rect2 = Rect2(150.0 + float(i) * marker_step, marker_y + 18.0, maxf(18.0, marker_step - 13.0), 8.0)
