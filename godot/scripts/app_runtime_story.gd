@@ -8,11 +8,11 @@ extends "res://scripts/app_runtime_compat.gd"
 const SAVE_VERSION: int = 2
 
 const INTRO_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/intro/intro_01_world.png"),
-	preload("res://assets/comics/intro/intro_02_wizard.png"),
-	preload("res://assets/comics/intro/intro_03_disappearance.png"),
-	preload("res://assets/comics/intro/intro_04_owl.png"),
-	preload("res://assets/comics/intro/intro_05_journey.png")
+	preload("res://assets/comics/intro/intro_01_world.webp"),
+	preload("res://assets/comics/intro/intro_02_wizard.webp"),
+	preload("res://assets/comics/intro/intro_03_disappearance.webp"),
+	preload("res://assets/comics/intro/intro_04_owl.webp"),
+	preload("res://assets/comics/intro/intro_05_journey.webp")
 ]
 
 # Comic pages: two panels on the first two pages and a final splash page.

@@ -8,9 +8,9 @@ const VILLAGE_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/bac
 const VILLAGE_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_village.svg")
 
 const VILLAGE_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/village_unlock/village_unlock_01.png"),
-	preload("res://assets/comics/village_unlock/village_unlock_02.png"),
-	preload("res://assets/comics/village_unlock/village_unlock_03.png")
+	preload("res://assets/comics/village_unlock/village_unlock_01.webp"),
+	preload("res://assets/comics/village_unlock/village_unlock_02.webp"),
+	preload("res://assets/comics/village_unlock/village_unlock_03.webp")
 ]
 
 var current_level_id: String = "forest"

@@ -19,30 +19,30 @@ const FAIRYTALES_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_c
 const TOWER_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_tower.svg")
 
 const SEA_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/sea_unlock/sea_unlock_01.png"),
-	preload("res://assets/comics/sea_unlock/sea_unlock_02.png"),
-	preload("res://assets/comics/sea_unlock/sea_unlock_03.png")
+	preload("res://assets/comics/sea_unlock/sea_unlock_01.webp"),
+	preload("res://assets/comics/sea_unlock/sea_unlock_02.webp"),
+	preload("res://assets/comics/sea_unlock/sea_unlock_03.webp")
 ]
 const CITY_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/city_unlock/city_unlock_01.png"),
-	preload("res://assets/comics/city_unlock/city_unlock_02.png"),
-	preload("res://assets/comics/city_unlock/city_unlock_03.png")
+	preload("res://assets/comics/city_unlock/city_unlock_01.webp"),
+	preload("res://assets/comics/city_unlock/city_unlock_02.webp"),
+	preload("res://assets/comics/city_unlock/city_unlock_03.webp")
 ]
 const FAIRYTALES_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_01.png"),
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_02.png"),
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_03.png")
+	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_01.webp"),
+	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_02.webp"),
+	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_03.webp")
 ]
 const TOWER_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/tower_unlock/tower_unlock_01.png"),
-	preload("res://assets/comics/tower_unlock/tower_unlock_02.png"),
-	preload("res://assets/comics/tower_unlock/tower_unlock_03.png")
+	preload("res://assets/comics/tower_unlock/tower_unlock_01.webp"),
+	preload("res://assets/comics/tower_unlock/tower_unlock_02.webp"),
+	preload("res://assets/comics/tower_unlock/tower_unlock_03.webp")
 ]
 const FINALE_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/finale/finale_01.png"),
-	preload("res://assets/comics/finale/finale_02.png"),
-	preload("res://assets/comics/finale/finale_03.png"),
-	preload("res://assets/comics/finale/finale_04.png")
+	preload("res://assets/comics/finale/finale_01.webp"),
+	preload("res://assets/comics/finale/finale_02.webp"),
+	preload("res://assets/comics/finale/finale_03.webp"),
+	preload("res://assets/comics/finale/finale_04.webp")
 ]
 const FINALE_PAGES: Array = [[0, 1], [2, 3]]
 
