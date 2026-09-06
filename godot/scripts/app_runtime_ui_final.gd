@@ -1,7 +1,8 @@
 extends "res://scripts/app_runtime_ui.gd"
 
 # Final production composition pass for maps and settings.
-# Keeps the already approved menu/gameplay/modals from app_runtime_ui.gd.
+# Keeps the approved menu/gameplay/modals from app_runtime_ui.gd and uses the
+# delivered map/header assets as actual UI surfaces instead of loose decoration.
 
 const FINAL_LEVEL_CATALOG = preload("res://scripts/level_catalog.gd")
 
@@ -26,34 +27,55 @@ const FINAL_LEVEL_NODE_OPEN: Texture2D = preload("res://assets/ui/level_map/leve
 const FINAL_LEVEL_PATH_SEGMENT: Texture2D = preload("res://assets/ui/level_map/level_path_segment.png")
 const FINAL_LEVEL_PATH_DOT: Texture2D = preload("res://assets/ui/level_map/level_path_dot.png")
 
-const FINAL_ICON_BACK: Texture2D = preload("res://assets/ui/icons/icon_back.svg")
 const FINAL_ICON_RESET: Texture2D = preload("res://assets/ui/icons/icon_reset.svg")
 const FINAL_WOOD_SIGN: Texture2D = preload("res://assets/ui/decor/decor_wood_sign.png")
 
 
 func _show_main_menu() -> void:
 	super._show_main_menu()
-	# The wooden board is not a free-standing menu decoration. It is reserved for
-	# labelled transition/navigation use, so remove the tiny empty board from menu.
 	for child in screen_layer.get_children():
 		if child is TextureRect and (child as TextureRect).texture == FINAL_WOOD_SIGN:
 			child.queue_free()
 
 
 func _show_settings_modal(from_game: bool) -> void:
-	super._show_settings_modal(from_game)
-	if current_modal != "settings":
-		return
-	var reset_button: Button = _find_button_exact(modal_layer, "Сбросить прогресс")
-	if reset_button != null:
-		reset_button.visible = true
-		reset_button.custom_minimum_size.y = 76.0
-		reset_button.icon = FINAL_ICON_RESET
-		_apply_control_font(reset_button, 21, Color("f6e7d0"))
-	var panel: PanelContainer = _active_modal_panel()
-	if panel != null:
-		panel.custom_minimum_size = Vector2(650.0, 690.0)
-		call_deferred("_center_modal_panel_exact", panel)
+	# Build this window explicitly. The inherited base no longer creates the reset
+	# action, so trying to unhide it cannot work.
+	_clear_modal()
+	current_modal = "settings"
+	if from_game and game != null and is_instance_valid(game):
+		game.set("settings_open", false)
+		_pause_game(true)
+
+	var panel: PanelContainer = _modal_panel(Vector2(650.0, 690.0))
+	var column: VBoxContainer = _modal_column(panel)
+	column.add_child(_label("Звук", 48, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER))
+	column.add_child(_modal_spacer(8.0))
+	column.add_child(_settings_row("Музыка", ICON_MUSIC_ON, true))
+	column.add_child(_settings_row("Звуки", ICON_SOUND_ON, false))
+	column.add_child(_modal_spacer(14.0))
+
+	var back_button: Button = _button("Назад", "secondary", null, 88.0)
+	back_button.pressed.connect(_on_settings_done_pressed)
+	column.add_child(back_button)
+
+	var reset_button: Button = _button("Сбросить прогресс", "menu_secondary", null, 76.0)
+	reset_button.add_theme_color_override("font_color", Color("f2d7d1"))
+	reset_button.add_theme_color_override("font_hover_color", Color("fff1ed"))
+	reset_button.tooltip_text = "Начать прохождение заново"
+	reset_button.pressed.connect(_on_reset_progress_final)
+	column.add_child(reset_button)
+
+	_animate_in(panel)
+	call_deferred("_center_modal_panel_exact", panel)
+
+
+func _on_reset_progress_final() -> void:
+	_ui_click()
+	_reset_progress_data()
+	_save_local_state()
+	_clear_modal()
+	_show_main_menu()
 
 
 func _show_level_select() -> void:
@@ -68,16 +90,16 @@ func _show_level_select() -> void:
 		app_audio.set_suspended("gameplay", false)
 
 	_add_background(screen_layer, 0.34)
-	_add_map_canvas(Rect2(72.0, 154.0, 1456.0, 646.0))
+	_add_map_canvas(Rect2(72.0, 150.0, 1456.0, 650.0))
 	_add_world_header()
 
 	var points: Array[Vector2] = [
-		Vector2(220.0, 620.0),
-		Vector2(455.0, 475.0),
-		Vector2(705.0, 600.0),
-		Vector2(955.0, 435.0),
-		Vector2(1210.0, 590.0),
-		Vector2(1370.0, 345.0)
+		Vector2(220.0, 610.0),
+		Vector2(455.0, 455.0),
+		Vector2(705.0, 585.0),
+		Vector2(955.0, 415.0),
+		Vector2(1210.0, 565.0),
+		Vector2(1370.0, 325.0)
 	]
 	_add_textured_route(points, FINAL_WORLD_PATH_SEGMENT, FINAL_WORLD_PATH_DOT, 18.0)
 
@@ -87,11 +109,12 @@ func _show_level_select() -> void:
 		var unlocked: bool = _is_location_unlocked(location_id)
 		_add_world_node_final(location_id, i + 1, FINAL_LEVEL_CATALOG.location_title(location_id), points[i], unlocked, completed)
 
-	var hint_scroll: TextureRect = _add_texture(screen_layer, UI_DECOR_SCROLL_LARGE, Rect2(470.0, 758.0, 660.0, 92.0), 0.92)
-	hint_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hint: Label = _label("Возвращай слова — и путь будет открываться дальше", 18, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	hint.position = Vector2(535.0, 783.0)
-	hint.size = Vector2(530.0, 34.0)
+	# The delivered long header plate works much better here than the narrow scroll.
+	_add_texture(screen_layer, FINAL_HEADER_MEDIUM, Rect2(515.0, 775.0, 570.0, 90.0), 0.98)
+	var hint: Label = _label("Возвращай слова — открывай путь дальше", 18, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	hint.position = Vector2(580.0, 800.0)
+	hint.size = Vector2(440.0, 34.0)
+	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(hint)
 
@@ -113,9 +136,9 @@ func _show_location_levels(location_id: String) -> void:
 	_add_level_header(location_id)
 
 	var points: Array[Vector2] = [
-		Vector2(205.0, 650.0), Vector2(430.0, 650.0), Vector2(655.0, 650.0),
-		Vector2(880.0, 650.0), Vector2(1105.0, 650.0), Vector2(1340.0, 535.0),
-		Vector2(1110.0, 380.0), Vector2(875.0, 380.0), Vector2(640.0, 380.0), Vector2(405.0, 265.0)
+		Vector2(205.0, 645.0), Vector2(430.0, 645.0), Vector2(655.0, 645.0),
+		Vector2(880.0, 645.0), Vector2(1105.0, 645.0), Vector2(1340.0, 525.0),
+		Vector2(1110.0, 370.0), Vector2(875.0, 370.0), Vector2(640.0, 370.0), Vector2(405.0, 255.0)
 	]
 	_add_textured_route(points, FINAL_LEVEL_PATH_SEGMENT, FINAL_LEVEL_PATH_DOT, 14.0)
 
@@ -126,47 +149,36 @@ func _show_location_levels(location_id: String) -> void:
 		var unlocked: bool = level_number <= mini(10, completed + 1) or completed >= 10
 		_add_level_node_final(location_id, level_number, points[i], unlocked, done)
 
-	var back_button: Button = _button("К карте мира", "menu_secondary", FINAL_ICON_BACK, 76.0)
-	back_button.position = Vector2(640.0, 804.0)
-	back_button.size = Vector2(320.0, 76.0)
-	back_button.pressed.connect(_show_level_select)
-	screen_layer.add_child(back_button)
-
 
 func _add_world_header() -> void:
-	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(88.0, 36.0, 1424.0, 105.0), 1.0)
-	var home: Button = _icon_button(ICON_HOME, "В меню")
-	home.position = Vector2(116.0, 55.0)
-	home.size = Vector2(66.0, 66.0)
-	home.pressed.connect(_on_menu_pressed)
-	screen_layer.add_child(home)
-	var title: Label = _label("Карта мира", 34, Color("fff7df"), HORIZONTAL_ALIGNMENT_LEFT)
-	title.position = Vector2(205.0, 59.0)
-	title.size = Vector2(520.0, 56.0)
+	# One clear navigation action on the left, title on the supplied parchment plate.
+	var menu_button: Button = _button("Меню", "menu_secondary", null, 72.0)
+	menu_button.position = Vector2(92.0, 42.0)
+	menu_button.size = Vector2(190.0, 72.0)
+	menu_button.pressed.connect(_on_menu_pressed)
+	screen_layer.add_child(menu_button)
+
+	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(465.0, 28.0, 670.0, 104.0), 1.0)
+	var title: Label = _label("Карта мира", 31, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	title.position = Vector2(560.0, 58.0)
+	title.size = Vector2(480.0, 44.0)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	screen_layer.add_child(title)
-	var progress: Label = _label("%d / 60 уровней" % _total_completed_levels(), 19, Color("d8e2f4"), HORIZONTAL_ALIGNMENT_RIGHT)
-	progress.position = Vector2(1210.0, 67.0)
-	progress.size = Vector2(230.0, 42.0)
-	screen_layer.add_child(progress)
 
 
 func _add_level_header(location_id: String) -> void:
-	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(88.0, 36.0, 1424.0, 105.0), 1.0)
-	var icon_back: Button = _icon_button(FINAL_ICON_BACK, "К карте мира")
-	icon_back.position = Vector2(116.0, 55.0)
-	icon_back.size = Vector2(66.0, 66.0)
-	icon_back.pressed.connect(_show_level_select)
-	screen_layer.add_child(icon_back)
-	var chapter_icon: TextureRect = _add_texture(screen_layer, _icon_for_location(location_id), Rect2(202.0, 58.0, 50.0, 50.0), 1.0)
-	chapter_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var heading: Label = _label("%s · карта уровней" % FINAL_LEVEL_CATALOG.location_title(location_id), 31, Color("fff7df"), HORIZONTAL_ALIGNMENT_LEFT)
-	heading.position = Vector2(267.0, 59.0)
-	heading.size = Vector2(720.0, 55.0)
+	var back_button: Button = _button("К карте мира", "menu_secondary", null, 72.0)
+	back_button.position = Vector2(92.0, 42.0)
+	back_button.size = Vector2(250.0, 72.0)
+	back_button.pressed.connect(_show_level_select)
+	screen_layer.add_child(back_button)
+
+	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(465.0, 28.0, 670.0, 104.0), 1.0)
+	var heading: Label = _label("%s · уровни" % FINAL_LEVEL_CATALOG.location_title(location_id), 29, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	heading.position = Vector2(550.0, 58.0)
+	heading.size = Vector2(500.0, 44.0)
+	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	screen_layer.add_child(heading)
-	var progress: Label = _label("%d / 10" % _completed_for_location(location_id), 20, Color("d8e2f4"), HORIZONTAL_ALIGNMENT_RIGHT)
-	progress.position = Vector2(1300.0, 66.0)
-	progress.size = Vector2(140.0, 42.0)
-	screen_layer.add_child(progress)
 
 
 func _add_map_canvas(rect: Rect2) -> void:
@@ -187,9 +199,9 @@ func _add_map_canvas(rect: Rect2) -> void:
 	style.corner_radius_bottom_right = 24
 	canvas.add_theme_stylebox_override("panel", style)
 	screen_layer.add_child(canvas)
-	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(68.0, 138.0, 330.0, 115.0), 0.42)
-	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(1202.0, 138.0, 330.0, 115.0), 0.42, true)
-	_add_texture(screen_layer, UI_DECOR_CRYSTALS, Rect2(1310.0, 690.0, 150.0, 105.0), 0.34)
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(68.0, 138.0, 330.0, 115.0), 0.36)
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(1202.0, 138.0, 330.0, 115.0), 0.36, true)
+	_add_texture(screen_layer, UI_DECOR_CRYSTALS, Rect2(1310.0, 690.0, 150.0, 105.0), 0.30)
 
 
 func _add_world_node_final(location_id: String, number: int, title: String, center: Vector2, unlocked: bool, completed: int) -> void:
@@ -200,7 +212,7 @@ func _add_world_node_final(location_id: String, number: int, title: String, cent
 		texture = FINAL_WORLD_NODE_CURRENT
 
 	if unlocked and completed < 10:
-		_add_texture(screen_layer, FINAL_WORLD_PATH_GLOW, Rect2(center.x - 92.0, center.y - 92.0, 184.0, 184.0), 0.66)
+		_add_texture(screen_layer, FINAL_WORLD_PATH_GLOW, Rect2(center.x - 92.0, center.y - 92.0, 184.0, 184.0), 0.62)
 	_add_dark_disc(center, 136.0)
 
 	var button: TextureButton = TextureButton.new()
@@ -219,12 +231,14 @@ func _add_world_node_final(location_id: String, number: int, title: String, cent
 
 	var chapter_icon: TextureRect = _add_texture(screen_layer, _icon_for_location(location_id) if unlocked else ICON_LOCK, Rect2(center.x - 31.0, center.y - 35.0, 62.0, 62.0), 1.0 if unlocked else 0.72)
 	chapter_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
 	_add_texture(screen_layer, FINAL_WORLD_LABEL, Rect2(center.x - 112.0, center.y + 71.0, 224.0, 54.0), 1.0)
 	var label: Label = _label("%02d · %s" % [number, title], 18, Color("fff4d7") if unlocked else Color("a8afba"), HORIZONTAL_ALIGNMENT_CENTER)
 	label.position = Vector2(center.x - 102.0, center.y + 83.0)
 	label.size = Vector2(204.0, 28.0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(label)
+
 	_add_texture(screen_layer, FINAL_WORLD_PROGRESS, Rect2(center.x - 70.0, center.y + 119.0, 140.0, 40.0), 1.0)
 	var progress: Label = _label("%d / 10" % completed, 15, Color("9cf0a7") if completed >= 10 else Color("fff2d1"), HORIZONTAL_ALIGNMENT_CENTER)
 	progress.position = Vector2(center.x - 62.0, center.y + 128.0)
@@ -262,13 +276,15 @@ func _add_level_node_final(location_id: String, level_number: int, center: Vecto
 	number_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(number_label)
 
+	# Keep each level title on a readable compact plaque; long names trim rather
+	# than colliding with the route or neighbouring nodes.
 	var title_panel: PanelContainer = PanelContainer.new()
 	title_panel.position = Vector2(center.x - 92.0, center.y + 60.0)
 	title_panel.size = Vector2(184.0, 38.0)
 	title_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title_style: StyleBoxFlat = StyleBoxFlat.new()
-	title_style.bg_color = Color(0.015, 0.045, 0.09, 0.88)
-	title_style.border_color = Color(0.55, 0.37, 0.14, 0.78)
+	title_style.bg_color = Color(0.015, 0.045, 0.09, 0.90)
+	title_style.border_color = Color(0.55, 0.37, 0.14, 0.82)
 	title_style.border_width_left = 1
 	title_style.border_width_top = 1
 	title_style.border_width_right = 1
@@ -279,6 +295,7 @@ func _add_level_node_final(location_id: String, level_number: int, center: Vecto
 	title_style.corner_radius_bottom_right = 10
 	title_panel.add_theme_stylebox_override("panel", title_style)
 	screen_layer.add_child(title_panel)
+
 	var title: Label = _label(FINAL_LEVEL_CATALOG.level_title(location_id, level_number), 14, Color("eef3fb") if unlocked else Color("8f9aaa"), HORIZONTAL_ALIGNMENT_CENTER)
 	title.position = Vector2(center.x - 86.0, center.y + 67.0)
 	title.size = Vector2(172.0, 24.0)
@@ -331,23 +348,6 @@ func _add_textured_route(points: Array[Vector2], segment_texture: Texture2D, dot
 		for step in [0.25, 0.5, 0.75]:
 			var p: Vector2 = start.lerp(finish, step)
 			_add_texture(screen_layer, dot_texture, Rect2(p.x - 7.0, p.y - 7.0, 14.0, 14.0), 0.82)
-
-
-func _find_button_exact(node: Node, text_value: String) -> Button:
-	for child in node.get_children():
-		if child is Button and (child as Button).text == text_value:
-			return child as Button
-		var nested: Button = _find_button_exact(child, text_value)
-		if nested != null:
-			return nested
-	return null
-
-
-func _active_modal_panel() -> PanelContainer:
-	for child in modal_layer.get_children():
-		if child is PanelContainer:
-			return child as PanelContainer
-	return null
 
 
 func _stop_platform_gameplay_final() -> void:
