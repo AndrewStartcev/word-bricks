@@ -16,8 +16,7 @@ const SFX_STREAMS: Dictionary = {
 	"chapter_complete": preload("res://assets/audio/sfx/sfx_chapter_complete.wav"),
 	"hint": preload("res://assets/audio/sfx/sfx_hint.wav"),
 	"invalid": preload("res://assets/audio/sfx/sfx_invalid.wav"),
-	"defeat": preload("res://assets/audio/sfx/sfx_defeat.wav"),
-	"coin_collect": preload("res://assets/audio/sfx/sfx_coin_collect.wav")
+	"defeat": preload("res://assets/audio/sfx/sfx_defeat.wav")
 }
 
 const SFX_GAIN_DB: Dictionary = {
@@ -31,8 +30,7 @@ const SFX_GAIN_DB: Dictionary = {
 	"chapter_complete": -9.0,
 	"hint": -14.0,
 	"invalid": -20.0,
-	"defeat": -13.0,
-	"coin_collect": -16.0
+	"defeat": -13.0
 }
 
 const SFX_COOLDOWN_MS: Dictionary = {
@@ -46,8 +44,7 @@ const SFX_COOLDOWN_MS: Dictionary = {
 	"chapter_complete": 1000,
 	"hint": 250,
 	"invalid": 300,
-	"defeat": 1000,
-	"coin_collect": 80
+	"defeat": 1000
 }
 
 const LOW_PRIORITY_EVENTS: Array[String] = ["ui_click", "ui_back", "piece_move"]
