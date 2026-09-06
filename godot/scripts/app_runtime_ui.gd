@@ -81,13 +81,13 @@ func _show_main_menu() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	column.add_child(play_button)
 
-	var levels_button: Button = _button("Карта мира", "secondary", UI_ICON_WORLD_MAP, 96.0)
-	_style_menu_button(levels_button, 520.0)
+	var levels_button: Button = _button("Карта мира", "menu_secondary", UI_ICON_WORLD_MAP, 88.0)
+	_style_menu_button(levels_button, 500.0)
 	levels_button.pressed.connect(_on_levels_pressed)
 	column.add_child(levels_button)
 
-	var settings_button: Button = _button("Настройки", "secondary", ICON_SETTINGS, 96.0)
-	_style_menu_button(settings_button, 520.0)
+	var settings_button: Button = _button("Настройки", "menu_secondary", ICON_SETTINGS, 88.0)
+	_style_menu_button(settings_button, 500.0)
 	settings_button.pressed.connect(_on_menu_settings_pressed)
 	column.add_child(settings_button)
 
@@ -132,7 +132,7 @@ func _button(text: String, variant: String, _icon: Texture2D = null, height: flo
 	button.add_theme_color_override("font_pressed_color", Color("fff0bd"))
 	button.add_theme_color_override("font_disabled_color", Color(0.72, 0.70, 0.64, 0.70))
 
-	var use_small: bool = display_height <= 76.0
+	var use_small: bool = display_height <= 76.0 or variant == "menu_secondary"
 	var normal_tex: Texture2D
 	var hover_tex: Texture2D
 	var pressed_tex: Texture2D
