@@ -40,46 +40,50 @@ func _show_main_menu() -> void:
 	if app_audio != null:
 		app_audio.set_suspended("gameplay", false)
 
-	_add_background(screen_layer, 0.30)
+	_add_background(screen_layer, 0.22)
 
 	var owl: TextureRect = TextureRect.new()
 	owl.texture = OWL_IDLE
 	owl.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	owl.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	owl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	owl.position = Vector2(80.0, 500.0)
-	owl.size = Vector2(320.0, 320.0)
+	owl.position = Vector2(72.0, 500.0)
+	owl.size = Vector2(330.0, 330.0)
 	screen_layer.add_child(owl)
 
-	var panel: PanelContainer = _panel(Vector2(560.0, 620.0), Color(0.012, 0.035, 0.07, 0.88), true)
-	_center_control(panel, Vector2(80.0, 0.0))
+	# The delivered logo/buttons already form a strong composition, so avoid a
+	# large opaque app-like rectangle behind them.
+	var panel: PanelContainer = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(540.0, 650.0)
+	panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_center_control(panel, Vector2(100.0, -4.0))
 	screen_layer.add_child(panel)
-	var margin: MarginContainer = _margin(50, 34, 50, 42)
+	var margin: MarginContainer = _margin(38, 22, 38, 30)
 	panel.add_child(margin)
 	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", 16)
+	column.add_theme_constant_override("separation", 13)
 	margin.add_child(column)
 
 	var logo: TextureRect = TextureRect.new()
 	logo.texture = UI_LOGO
 	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	logo.custom_minimum_size = Vector2(440.0, 190.0)
+	logo.custom_minimum_size = Vector2(460.0, 205.0)
 	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(logo)
 
 	var active_id: String = _active_location_id()
 	var active_completed: int = _completed_for_location(active_id)
 	column.add_child(_label("%s · %d / 10 уровней" % [LEVEL_CATALOG.location_title(active_id), active_completed], 20, COL_GREEN, HORIZONTAL_ALIGNMENT_CENTER))
-	column.add_child(_modal_spacer(8.0))
+	column.add_child(_modal_spacer(5.0))
 
-	var play_button: Button = _button("Играть", "primary", UI_ICON_PLAY, 72.0)
+	var play_button: Button = _button("Играть", "primary", UI_ICON_PLAY, 104.0)
 	play_button.pressed.connect(_on_play_pressed)
 	column.add_child(play_button)
-	var levels_button: Button = _button("Карта мира", "secondary", UI_ICON_WORLD_MAP, 64.0)
+	var levels_button: Button = _button("Карта мира", "secondary", UI_ICON_WORLD_MAP, 90.0)
 	levels_button.pressed.connect(_on_levels_pressed)
 	column.add_child(levels_button)
-	var settings_button: Button = _button("Настройки", "secondary", ICON_SETTINGS, 64.0)
+	var settings_button: Button = _button("Настройки", "secondary", ICON_SETTINGS, 90.0)
 	settings_button.pressed.connect(_on_menu_settings_pressed)
 	column.add_child(settings_button)
 
@@ -96,51 +100,45 @@ func _show_main_menu() -> void:
 	_animate_in(panel)
 
 
-func _button(text: String, variant: String, icon: Texture2D = null, height: float = 60.0) -> Button:
+func _button(text: String, variant: String, _icon: Texture2D = null, height: float = 60.0) -> Button:
 	var button: Button = Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(0.0, height)
 	button.focus_mode = Control.FOCUS_ALL
-	button.icon = icon
-	button.expand_icon = true
-	button.add_theme_constant_override("h_separation", 14)
-	_apply_control_font(button, 20, Color("fff7dc"))
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.add_theme_constant_override("h_separation", 8)
+	_apply_control_font(button, 22 if height >= 82.0 else 20, Color("fff7dc"))
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_color_override("font_pressed_color", Color("fff0bd"))
 	button.add_theme_color_override("font_disabled_color", Color(0.72, 0.70, 0.64, 0.70))
 
-	if variant == "ghost":
-		button.add_theme_stylebox_override("normal", _style_box(Color(0.015, 0.045, 0.085, 0.40), Color(0.14, 0.25, 0.38, 0.65), 10, false))
-		button.add_theme_stylebox_override("hover", _style_box(Color(0.03, 0.08, 0.14, 0.82), Color(0.20, 0.48, 0.75, 0.75), 10, false))
-		button.add_theme_stylebox_override("pressed", _style_box(Color(0.02, 0.06, 0.11, 0.95), COL_BORDER, 10, false))
-		button.add_theme_stylebox_override("disabled", _style_box(Color(0.015, 0.035, 0.07, 0.35), Color(0.12, 0.20, 0.30, 0.45), 10, false))
+	# Full-width text buttons use the artwork by itself. The 64px SVG icons made
+	# the label group drift outside the decorative frame at compact sizes.
+	var use_small: bool = variant == "ghost" or height <= 58.0
+	var normal_tex: Texture2D
+	var hover_tex: Texture2D
+	var pressed_tex: Texture2D
+	var disabled_tex: Texture2D
+	if use_small:
+		normal_tex = UI_BUTTON_SMALL_NORMAL
+		hover_tex = UI_BUTTON_SMALL_HOVER
+		pressed_tex = UI_BUTTON_SMALL_PRESSED
+		disabled_tex = UI_BUTTON_SMALL_DISABLED
+	elif variant == "primary":
+		normal_tex = UI_BUTTON_PRIMARY_NORMAL
+		hover_tex = UI_BUTTON_PRIMARY_HOVER
+		pressed_tex = UI_BUTTON_PRIMARY_PRESSED
+		disabled_tex = UI_BUTTON_PRIMARY_DISABLED
 	else:
-		var use_small: bool = height <= 54.0
-		var normal_tex: Texture2D
-		var hover_tex: Texture2D
-		var pressed_tex: Texture2D
-		var disabled_tex: Texture2D
-		if use_small:
-			normal_tex = UI_BUTTON_SMALL_NORMAL
-			hover_tex = UI_BUTTON_SMALL_HOVER
-			pressed_tex = UI_BUTTON_SMALL_PRESSED
-			disabled_tex = UI_BUTTON_SMALL_DISABLED
-		elif variant == "primary":
-			normal_tex = UI_BUTTON_PRIMARY_NORMAL
-			hover_tex = UI_BUTTON_PRIMARY_HOVER
-			pressed_tex = UI_BUTTON_PRIMARY_PRESSED
-			disabled_tex = UI_BUTTON_PRIMARY_DISABLED
-		else:
-			normal_tex = UI_BUTTON_SECONDARY_NORMAL
-			hover_tex = UI_BUTTON_SECONDARY_HOVER
-			pressed_tex = UI_BUTTON_SECONDARY_PRESSED
-			disabled_tex = UI_BUTTON_SECONDARY_DISABLED
+		normal_tex = UI_BUTTON_SECONDARY_NORMAL
+		hover_tex = UI_BUTTON_SECONDARY_HOVER
+		pressed_tex = UI_BUTTON_SECONDARY_PRESSED
+		disabled_tex = UI_BUTTON_SECONDARY_DISABLED
 
-		button.add_theme_stylebox_override("normal", _button_texture_box(normal_tex))
-		button.add_theme_stylebox_override("hover", _button_texture_box(hover_tex))
-		button.add_theme_stylebox_override("pressed", _button_texture_box(pressed_tex))
-		button.add_theme_stylebox_override("disabled", _button_texture_box(disabled_tex))
-
+	button.add_theme_stylebox_override("normal", _button_texture_box(normal_tex, height))
+	button.add_theme_stylebox_override("hover", _button_texture_box(hover_tex, height))
+	button.add_theme_stylebox_override("pressed", _button_texture_box(pressed_tex, height))
+	button.add_theme_stylebox_override("disabled", _button_texture_box(disabled_tex, height))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	return button
 
@@ -168,17 +166,20 @@ func _modal_panel(panel_size: Vector2) -> PanelContainer:
 	return panel
 
 
-func _button_texture_box(texture: Texture2D) -> StyleBoxTexture:
+func _button_texture_box(texture: Texture2D, target_height: float) -> StyleBoxTexture:
 	var box: StyleBoxTexture = StyleBoxTexture.new()
 	box.texture = texture
-	box.texture_margin_left = 72.0
-	box.texture_margin_right = 72.0
-	box.texture_margin_top = 40.0
-	box.texture_margin_bottom = 40.0
-	box.content_margin_left = 24.0
-	box.content_margin_right = 24.0
-	box.content_margin_top = 12.0
-	box.content_margin_bottom = 12.0
+	# Keep the ornate end caps, but use a much smaller vertical slice than the
+	# first pass. Large 40px top/bottom slices were overlapping on 58-72px UI.
+	box.texture_margin_left = 58.0
+	box.texture_margin_right = 58.0
+	var vertical_slice: float = 20.0 if target_height >= 82.0 else 13.0
+	box.texture_margin_top = vertical_slice
+	box.texture_margin_bottom = vertical_slice
+	box.content_margin_left = 22.0
+	box.content_margin_right = 22.0
+	box.content_margin_top = 7.0
+	box.content_margin_bottom = 7.0
 	return box
 
 
