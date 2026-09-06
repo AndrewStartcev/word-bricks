@@ -1,15 +1,12 @@
 extends "res://scripts/app_runtime_ui.gd"
 
-# Final production composition pass for maps and settings.
-# Keeps the approved menu/gameplay/modals from app_runtime_ui.gd and uses the
-# delivered map/header assets as actual UI surfaces instead of loose decoration.
+# Final production composition pass for menu, maps and settings.
+# Keeps gameplay/modals from app_runtime_ui.gd and composes delivered assets
+# according to the designer safe-area and scaling notes.
 
 const FINAL_LEVEL_CATALOG = preload("res://scripts/level_catalog.gd")
 
 const FINAL_HEADER_LONG: Texture2D = preload("res://assets/ui/panels/panel_header_long.png")
-const FINAL_HEADER_MEDIUM: Texture2D = preload("res://assets/ui/panels/panel_header_medium.png")
-const FINAL_HEADER_SMALL: Texture2D = preload("res://assets/ui/panels/panel_header_small.png")
-
 const FINAL_WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.png")
 const FINAL_WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.png")
 const FINAL_WORLD_NODE_LOCKED: Texture2D = preload("res://assets/ui/world_map/location_node_locked.png")
@@ -28,19 +25,59 @@ const FINAL_LEVEL_PATH_SEGMENT: Texture2D = preload("res://assets/ui/level_map/l
 const FINAL_LEVEL_PATH_DOT: Texture2D = preload("res://assets/ui/level_map/level_path_dot.png")
 
 const FINAL_ICON_RESET: Texture2D = preload("res://assets/ui/icons/icon_reset.svg")
-const FINAL_WOOD_SIGN: Texture2D = preload("res://assets/ui/decor/decor_wood_sign.png")
 
 
 func _show_main_menu() -> void:
-	super._show_main_menu()
-	for child in screen_layer.get_children():
-		if child is TextureRect and (child as TextureRect).texture == FINAL_WOOD_SIGN:
-			child.queue_free()
+	_dispose_game()
+	_clear_layer(screen_layer)
+	_clear_layer(gameplay_ui_layer)
+	_clear_modal()
+	current_screen = "menu"
+	result_seen = false
+	gameplay_ui_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if app_audio != null:
+		app_audio.set_suspended("gameplay", false)
+
+	_add_background(screen_layer, 0.10)
+
+	# One deliberate decorative cluster on each side; the centre is reserved for UI.
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(-35.0, -12.0, 430.0, 155.0), 0.72)
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(1205.0, -12.0, 430.0, 155.0), 0.72, true)
+
+	var owl: TextureRect = _add_texture(screen_layer, OWL_IDLE, Rect2(38.0, 475.0, 360.0, 360.0), 1.0)
+	owl.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+	_add_texture(screen_layer, UI_DECOR_BOOKS, Rect2(1285.0, 650.0, 245.0, 185.0), 0.94)
+	_add_texture(screen_layer, UI_DECOR_LANTERN, Rect2(1390.0, 570.0, 150.0, 215.0), 0.96)
+	_add_texture(screen_layer, UI_DECOR_CRYSTALS, Rect2(1140.0, 720.0, 165.0, 120.0), 0.78)
+
+	# Main visual axis: logo -> primary CTA -> two secondary actions.
+	var logo: TextureRect = _add_texture(screen_layer, UI_LOGO, Rect2(475.0, 72.0, 650.0, 290.0), 1.0)
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+	var play_button: Button = _button("Играть", "primary", null, 118.0)
+	play_button.position = Vector2(500.0, 390.0)
+	play_button.size = Vector2(600.0, 118.0)
+	play_button.pressed.connect(_on_play_pressed)
+	screen_layer.add_child(play_button)
+
+	var map_button: Button = _button("Карта мира", "menu_secondary", null, 92.0)
+	map_button.position = Vector2(555.0, 535.0)
+	map_button.size = Vector2(490.0, 92.0)
+	map_button.pressed.connect(_on_levels_pressed)
+	screen_layer.add_child(map_button)
+
+	var settings_button: Button = _button("Настройки", "menu_secondary", null, 92.0)
+	settings_button.position = Vector2(555.0, 650.0)
+	settings_button.size = Vector2(490.0, 92.0)
+	settings_button.pressed.connect(_on_menu_settings_pressed)
+	screen_layer.add_child(settings_button)
+
+	_animate_in(logo)
+	_animate_in(play_button)
 
 
 func _show_settings_modal(from_game: bool) -> void:
-	# Build this window explicitly. The inherited base no longer creates the reset
-	# action, so trying to unhide it cannot work.
 	_clear_modal()
 	current_modal = "settings"
 	if from_game and game != null and is_instance_valid(game):
@@ -90,33 +127,25 @@ func _show_level_select() -> void:
 		app_audio.set_suspended("gameplay", false)
 
 	_add_background(screen_layer, 0.34)
-	_add_map_canvas(Rect2(72.0, 150.0, 1456.0, 650.0))
+	_add_map_canvas(Rect2(72.0, 154.0, 1456.0, 646.0))
 	_add_world_header()
 
 	var points: Array[Vector2] = [
-		Vector2(220.0, 610.0),
-		Vector2(455.0, 455.0),
-		Vector2(705.0, 585.0),
-		Vector2(955.0, 415.0),
-		Vector2(1210.0, 565.0),
-		Vector2(1370.0, 325.0)
+		Vector2(220.0, 610.0), Vector2(455.0, 455.0), Vector2(705.0, 585.0),
+		Vector2(955.0, 415.0), Vector2(1210.0, 565.0), Vector2(1370.0, 325.0)
 	]
 	_add_textured_route(points, FINAL_WORLD_PATH_SEGMENT, FINAL_WORLD_PATH_DOT, 18.0)
 
 	for i in range(FINAL_LEVEL_CATALOG.LOCATION_ORDER.size()):
 		var location_id: String = FINAL_LEVEL_CATALOG.LOCATION_ORDER[i]
-		var completed: int = _completed_for_location(location_id)
-		var unlocked: bool = _is_location_unlocked(location_id)
-		_add_world_node_final(location_id, i + 1, FINAL_LEVEL_CATALOG.location_title(location_id), points[i], unlocked, completed)
-
-	# The delivered long header plate works much better here than the narrow scroll.
-	_add_texture(screen_layer, FINAL_HEADER_MEDIUM, Rect2(515.0, 775.0, 570.0, 90.0), 0.98)
-	var hint: Label = _label("Возвращай слова — открывай путь дальше", 18, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	hint.position = Vector2(580.0, 800.0)
-	hint.size = Vector2(440.0, 34.0)
-	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	screen_layer.add_child(hint)
+		_add_world_node_final(
+			location_id,
+			i + 1,
+			FINAL_LEVEL_CATALOG.location_title(location_id),
+			points[i],
+			_is_location_unlocked(location_id),
+			_completed_for_location(location_id)
+		)
 
 
 func _show_location_levels(location_id: String) -> void:
@@ -132,7 +161,7 @@ func _show_location_levels(location_id: String) -> void:
 		app_audio.set_suspended("gameplay", false)
 
 	_add_location_background(screen_layer, location_id, 0.32)
-	_add_map_canvas(Rect2(72.0, 150.0, 1456.0, 650.0))
+	_add_map_canvas(Rect2(72.0, 154.0, 1456.0, 646.0))
 	_add_level_header(location_id)
 
 	var points: Array[Vector2] = [
@@ -151,33 +180,35 @@ func _show_location_levels(location_id: String) -> void:
 
 
 func _add_world_header() -> void:
-	# One clear navigation action on the left, title on the supplied parchment plate.
-	var menu_button: Button = _button("Меню", "menu_secondary", null, 72.0)
-	menu_button.position = Vector2(92.0, 42.0)
-	menu_button.size = Vector2(190.0, 72.0)
+	var menu_button: Button = _button("Меню", "menu_secondary", null, 88.0)
+	menu_button.position = Vector2(82.0, 32.0)
+	menu_button.size = Vector2(240.0, 88.0)
 	menu_button.pressed.connect(_on_menu_pressed)
 	screen_layer.add_child(menu_button)
 
-	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(465.0, 28.0, 670.0, 104.0), 1.0)
-	var title: Label = _label("Карта мира", 31, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	title.position = Vector2(560.0, 58.0)
-	title.size = Vector2(480.0, 44.0)
+	# Preserve the source 800×180 aspect ratio; stretching it flatter distorts the centre ornament.
+	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(490.0, 18.0, 620.0, 140.0), 1.0)
+	var title: Label = _label("Карта мира", 32, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	title.position = Vector2(585.0, 60.0)
+	title.size = Vector2(430.0, 48.0)
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(title)
 
 
 func _add_level_header(location_id: String) -> void:
-	var back_button: Button = _button("К карте мира", "menu_secondary", null, 72.0)
-	back_button.position = Vector2(92.0, 42.0)
-	back_button.size = Vector2(250.0, 72.0)
+	var back_button: Button = _button("К карте мира", "menu_secondary", null, 88.0)
+	back_button.position = Vector2(82.0, 32.0)
+	back_button.size = Vector2(285.0, 88.0)
 	back_button.pressed.connect(_show_level_select)
 	screen_layer.add_child(back_button)
 
-	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(465.0, 28.0, 670.0, 104.0), 1.0)
-	var heading: Label = _label("%s · уровни" % FINAL_LEVEL_CATALOG.location_title(location_id), 29, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	heading.position = Vector2(550.0, 58.0)
-	heading.size = Vector2(500.0, 44.0)
+	_add_texture(screen_layer, FINAL_HEADER_LONG, Rect2(490.0, 18.0, 620.0, 140.0), 1.0)
+	var heading: Label = _label("%s · уровни" % FINAL_LEVEL_CATALOG.location_title(location_id), 30, UI_PARCHMENT_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	heading.position = Vector2(575.0, 60.0)
+	heading.size = Vector2(450.0, 48.0)
 	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(heading)
 
 
@@ -199,9 +230,9 @@ func _add_map_canvas(rect: Rect2) -> void:
 	style.corner_radius_bottom_right = 24
 	canvas.add_theme_stylebox_override("panel", style)
 	screen_layer.add_child(canvas)
-	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(68.0, 138.0, 330.0, 115.0), 0.36)
-	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(1202.0, 138.0, 330.0, 115.0), 0.36, true)
-	_add_texture(screen_layer, UI_DECOR_CRYSTALS, Rect2(1310.0, 690.0, 150.0, 105.0), 0.30)
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(68.0, 138.0, 330.0, 115.0), 0.34)
+	_add_texture(screen_layer, UI_DECOR_BRANCH, Rect2(1202.0, 138.0, 330.0, 115.0), 0.34, true)
+	_add_texture(screen_layer, UI_DECOR_CRYSTALS, Rect2(1310.0, 690.0, 150.0, 105.0), 0.28)
 
 
 func _add_world_node_final(location_id: String, number: int, title: String, center: Vector2, unlocked: bool, completed: int) -> void:
@@ -276,8 +307,6 @@ func _add_level_node_final(location_id: String, level_number: int, center: Vecto
 	number_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(number_label)
 
-	# Keep each level title on a readable compact plaque; long names trim rather
-	# than colliding with the route or neighbouring nodes.
 	var title_panel: PanelContainer = PanelContainer.new()
 	title_panel.position = Vector2(center.x - 92.0, center.y + 60.0)
 	title_panel.size = Vector2(184.0, 38.0)
