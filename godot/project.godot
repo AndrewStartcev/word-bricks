@@ -8,6 +8,10 @@ config_version=5
 config/name="Словопад: Магия слов"
 run/main_scene="res://main.tscn"
 
+[application/boot_splash]
+
+show_image=false
+
 [autoload]
 
 YandexGames="*res://scripts/yandex_games_service_hardened.gd"
