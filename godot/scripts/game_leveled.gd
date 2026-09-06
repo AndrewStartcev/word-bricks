@@ -60,48 +60,48 @@ func _build_gap_indices(word: String, level_number: int) -> Array:
 
 
 func _drop_interval() -> float:
-	# Difficulty rises across the map, but not enough to turn later rounds into a
-	# reflex game. Vocabulary remains the main challenge.
 	var map_pressure: float = float(round_number - 1) * 0.022
 	var word_pressure: float = float(completed_words.size()) * 0.035
 	return maxf(0.34, 0.90 - map_pressure - word_pressure)
 
 
 func _draw_left_panel() -> void:
-	var panel: Rect2 = Rect2(125.0, 94.0, 330.0, 720.0)
+	var x: float = PRESENT_X_SHIFT
+	var panel: Rect2 = Rect2(125.0 + x, 94.0, 330.0, 720.0)
 	draw_texture_rect(UI_SIDEBAR_LEFT, panel, false)
 
-	# Keep content clear of the ornate frame on both sides.
-	const CONTENT_LEFT: float = 165.0
-	const CONTENT_RIGHT: float = 425.0
-	const CONTENT_WIDTH: float = CONTENT_RIGHT - CONTENT_LEFT
+	const CONTENT_LEFT_BASE: float = 165.0
+	const CONTENT_RIGHT_BASE: float = 425.0
+	const CONTENT_WIDTH: float = CONTENT_RIGHT_BASE - CONTENT_LEFT_BASE
+	var content_left: float = CONTENT_LEFT_BASE + x
+	var content_right: float = CONTENT_RIGHT_BASE + x
 
-	draw_texture_rect(chapter_icon, Rect2(CONTENT_LEFT, 120.0, 52.0, 52.0), false)
-	_draw_text("Локация %d" % chapter_number, Vector2(232.0, 140.0), 16, Color(0.72, 0.80, 0.91))
-	_draw_text(chapter_title, Vector2(232.0, 174.0), 29, Color("73e891"))
-	_draw_text("Уровень %d / %d" % [round_number, LEVEL_CATALOG.LEVELS_PER_LOCATION], Vector2(CONTENT_LEFT, 214.0), 17, Color("7dc9ff"))
-	_draw_text(round_title, Vector2(CONTENT_LEFT, 240.0), 16, Color(0.78, 0.84, 0.94))
+	draw_texture_rect(chapter_icon, Rect2(content_left, 120.0, 52.0, 52.0), false)
+	_draw_text("Локация %d" % chapter_number, Vector2(232.0 + x, 140.0), 16, Color(0.72, 0.80, 0.91))
+	_draw_text(chapter_title, Vector2(232.0 + x, 174.0), 29, Color("73e891"))
+	_draw_text("Уровень %d / %d" % [round_number, LEVEL_CATALOG.LEVELS_PER_LOCATION], Vector2(content_left, 214.0), 17, Color("7dc9ff"))
+	_draw_fitted_text(round_title, Vector2(content_left, 240.0), CONTENT_WIDTH, 16, 12, Color(0.78, 0.84, 0.94))
 
 	var total_words: int = maxi(1, chapter_words.size())
-	draw_rect(Rect2(CONTENT_LEFT, 260.0, CONTENT_WIDTH, 8.0), Color(0.008, 0.026, 0.060, 0.88), true)
+	draw_rect(Rect2(content_left, 260.0, CONTENT_WIDTH, 8.0), Color(0.008, 0.026, 0.060, 0.88), true)
 	var ratio: float = float(completed_words.size()) / float(total_words)
-	draw_rect(Rect2(CONTENT_LEFT, 260.0, CONTENT_WIDTH * ratio, 8.0), Color("55d979"), true)
+	draw_rect(Rect2(content_left, 260.0, CONTENT_WIDTH * ratio, 8.0), Color("55d979"), true)
 
-	draw_line(Vector2(160.0, 292.0), Vector2(CONTENT_RIGHT, 292.0), Color(0.45, 0.34, 0.18, 0.58), 1.0)
-	_draw_text("Слово", Vector2(CONTENT_LEFT, 321.0), 17, Color(0.72, 0.80, 0.91))
-	_draw_current_word(Vector2(160.0, 336.0))
+	draw_line(Vector2(160.0 + x, 292.0), Vector2(content_right, 292.0), Color(0.45, 0.34, 0.18, 0.58), 1.0)
+	_draw_text("Слово", Vector2(content_left, 321.0), 17, Color(0.72, 0.80, 0.91))
+	_draw_current_word(Vector2(content_left, 336.0))
 
-	draw_texture_rect(ICON_CLUE, Rect2(CONTENT_LEFT, 409.0, 24.0, 24.0), false)
+	draw_texture_rect(ICON_CLUE, Rect2(content_left, 409.0, 24.0, 24.0), false)
 	var clue: String = ""
 	if word_index >= 0 and word_index < chapter_clues.size():
 		clue = String(chapter_clues[word_index])
-	_draw_text(clue, Vector2(200.0, 430.0), 16, Color(0.88, 0.91, 0.97))
+	_draw_fitted_text(clue, Vector2(content_left + 35.0, 430.0), CONTENT_WIDTH - 35.0, 16, 11, Color(0.88, 0.91, 0.97))
 
 	var marker_y: float = 492.0
-	_draw_text("Слова уровня", Vector2(CONTENT_LEFT, marker_y), 15, Color(0.62, 0.70, 0.82))
+	_draw_text("Слова уровня", Vector2(content_left, marker_y), 15, Color(0.62, 0.70, 0.82))
 	var marker_step: float = CONTENT_WIDTH / float(total_words)
 	for i in range(total_words):
-		var marker_rect: Rect2 = Rect2(CONTENT_LEFT + float(i) * marker_step, marker_y + 18.0, maxf(18.0, marker_step - 13.0), 8.0)
+		var marker_rect: Rect2 = Rect2(content_left + float(i) * marker_step, marker_y + 18.0, maxf(18.0, marker_step - 13.0), 8.0)
 		var marker_color: Color = Color(0.08, 0.17, 0.29, 0.92)
 		if i < completed_words.size():
 			marker_color = Color("65df86")
@@ -111,8 +111,8 @@ func _draw_left_panel() -> void:
 
 	if not completed_words.is_empty():
 		var last_word: String = completed_words[completed_words.size() - 1]
-		draw_texture_rect(ICON_CHECK, Rect2(CONTENT_LEFT, 554.0, 24.0, 24.0), false)
-		_draw_text(last_word, Vector2(200.0, 575.0), 18, Color("73e891"))
+		draw_texture_rect(ICON_CHECK, Rect2(content_left, 554.0, 24.0, 24.0), false)
+		_draw_fitted_text(last_word, Vector2(content_left + 35.0, 575.0), CONTENT_WIDTH - 35.0, 18, 12, Color("73e891"))
 
 
 func _word_slot_center(slot_index: int) -> Vector2:
@@ -120,5 +120,25 @@ func _word_slot_center(slot_index: int) -> Vector2:
 	var layout: Dictionary = _word_layout(word.length())
 	var slot_size: float = float(layout["slot"])
 	var gap: float = float(layout["gap"])
-	var origin: Vector2 = Vector2(160.0, 336.0)
+	var origin: Vector2 = Vector2(165.0 + PRESENT_X_SHIFT, 336.0)
 	return origin + Vector2(float(slot_index) * (slot_size + gap) + slot_size * 0.5, slot_size * 0.5)
+
+
+func _word_layout(letter_count: int) -> Dictionary:
+	var count: int = maxi(1, letter_count)
+	var available_width: float = 260.0
+	var gap: float = 7.0 if count <= 5 else (4.0 if count <= 8 else 2.0)
+	var slot_size: float = (available_width - gap * float(count - 1)) / float(count)
+	slot_size = minf(54.0, slot_size)
+	var font_size: int = clampi(roundi(slot_size * 0.57), 13, 31)
+	return {"slot": slot_size, "gap": gap, "font": font_size}
+
+
+func _draw_fitted_text(text: String, baseline: Vector2, max_width: float, preferred_size: int, min_size: int, color: Color) -> void:
+	var font_size: int = preferred_size
+	while font_size > min_size:
+		var measured: Vector2 = presentation_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size)
+		if measured.x <= max_width:
+			break
+		font_size -= 1
+	_draw_text(text, baseline, font_size, color)
