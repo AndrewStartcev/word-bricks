@@ -7,6 +7,24 @@ extends "res://scripts/app_runtime_chapters.gd"
 const LEVEL_CATALOG = preload("res://scripts/level_catalog.gd")
 const LEVEL_PROGRESS_VERSION: int = 1
 
+# Stage 3: production world-map and level-map skins.
+const WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.png")
+const WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.png")
+const WORLD_NODE_LOCKED: Texture2D = preload("res://assets/ui/world_map/location_node_locked.png")
+const WORLD_NODE_OPEN: Texture2D = preload("res://assets/ui/world_map/location_node_open.png")
+const WORLD_LABEL_PLATE: Texture2D = preload("res://assets/ui/world_map/location_label_plate.png")
+const WORLD_PROGRESS_PLATE: Texture2D = preload("res://assets/ui/world_map/location_progress_plate.png")
+const WORLD_PATH_DOT: Texture2D = preload("res://assets/ui/world_map/path_dot.png")
+const WORLD_PATH_GLOW: Texture2D = preload("res://assets/ui/world_map/path_glow.png")
+const WORLD_PATH_SEGMENT: Texture2D = preload("res://assets/ui/world_map/path_segment.png")
+
+const LEVEL_NODE_COMPLETE: Texture2D = preload("res://assets/ui/level_map/level_node_complete.png")
+const LEVEL_NODE_CURRENT: Texture2D = preload("res://assets/ui/level_map/level_node_current.png")
+const LEVEL_NODE_LOCKED: Texture2D = preload("res://assets/ui/level_map/level_node_locked.png")
+const LEVEL_NODE_OPEN: Texture2D = preload("res://assets/ui/level_map/level_node_open.png")
+const LEVEL_PATH_DOT: Texture2D = preload("res://assets/ui/level_map/level_path_dot.png")
+const LEVEL_PATH_SEGMENT: Texture2D = preload("res://assets/ui/level_map/level_path_segment.png")
+
 var current_stage_number: int = 1
 var forest_completed_levels: int = 0
 var village_completed_levels: int = 0
@@ -98,31 +116,50 @@ func _show_level_select() -> void:
 
 
 func _add_location_node(location_id: String, title: String, number: int, center: Vector2, unlocked: bool, completed: int, icon: Texture2D) -> void:
+	var state_texture: Texture2D = WORLD_NODE_LOCKED
+	if completed >= LEVEL_CATALOG.LEVELS_PER_LOCATION:
+		state_texture = WORLD_NODE_COMPLETE
+	elif unlocked:
+		state_texture = WORLD_NODE_CURRENT
+	elif completed > 0:
+		state_texture = WORLD_NODE_OPEN
+
+	# Soft glow behind the currently playable location.
+	if unlocked and completed < LEVEL_CATALOG.LEVELS_PER_LOCATION:
+		_add_map_texture(WORLD_PATH_GLOW, Rect2(center - Vector2(76.0, 76.0), Vector2(152.0, 152.0)), 0.72)
+
 	var button: Button = Button.new()
-	button.position = center - Vector2(118.0, 64.0)
-	button.size = Vector2(236.0, 128.0)
+	button.position = center - Vector2(58.0, 58.0)
+	button.size = Vector2(116.0, 116.0)
 	button.custom_minimum_size = button.size
-	button.text = "%02d   %s\n%d / 10" % [number, title, completed]
+	button.text = ""
 	button.icon = icon
 	button.expand_icon = true
 	button.add_theme_constant_override("icon_max_width", 48)
-	button.add_theme_constant_override("h_separation", 14)
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.disabled = not unlocked
-	_apply_control_font(button, 20, COL_TEXT)
-	button.add_theme_color_override("font_disabled_color", Color(0.55, 0.62, 0.72, 0.78))
-	var fill: Color = Color(0.018, 0.075, 0.135, 0.96)
-	var border: Color = Color(0.24, 0.59, 0.88, 0.82)
-	if completed >= 10:
-		fill = Color(0.035, 0.16, 0.11, 0.96)
-		border = Color(0.34, 0.88, 0.55, 0.90)
-	button.add_theme_stylebox_override("normal", _style_box(fill, border, 18, true))
-	button.add_theme_stylebox_override("hover", _style_box(Color(0.035, 0.13, 0.22, 0.99), Color(0.45, 0.78, 1.0, 0.96), 18, true))
-	button.add_theme_stylebox_override("pressed", _style_box(Color(0.025, 0.10, 0.18, 1.0), COL_PRIMARY, 18, false))
-	button.add_theme_stylebox_override("disabled", _style_box(Color(0.012, 0.035, 0.065, 0.86), Color(0.13, 0.22, 0.32, 0.62), 18, false))
+	button.focus_mode = Control.FOCUS_ALL
+	button.add_theme_stylebox_override("normal", _texture_style(state_texture))
+	button.add_theme_stylebox_override("hover", _texture_style(WORLD_NODE_OPEN if unlocked else state_texture))
+	button.add_theme_stylebox_override("pressed", _texture_style(WORLD_NODE_CURRENT))
+	button.add_theme_stylebox_override("disabled", _texture_style(WORLD_NODE_LOCKED))
 	if unlocked:
 		button.pressed.connect(Callable(self, "_on_location_selected").bind(location_id))
 	screen_layer.add_child(button)
+
+	_add_map_texture(WORLD_LABEL_PLATE, Rect2(center.x - 100.0, center.y + 53.0, 200.0, 48.0), 1.0)
+	var label_text: Label = _label("%02d · %s" % [number, title], 18, COL_TEXT if unlocked else COL_MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	label_text.position = Vector2(center.x - 94.0, center.y + 61.0)
+	label_text.size = Vector2(188.0, 30.0)
+	label_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	screen_layer.add_child(label_text)
+
+	_add_map_texture(WORLD_PROGRESS_PLATE, Rect2(center.x - 62.0, center.y + 96.0, 124.0, 34.0), 1.0)
+	var progress: Label = _label("%d / 10" % completed, 14, COL_GREEN if completed >= 10 else COL_TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	progress.position = Vector2(center.x - 58.0, center.y + 101.0)
+	progress.size = Vector2(116.0, 24.0)
+	progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	screen_layer.add_child(progress)
 
 
 func _on_location_selected(location_id: String) -> void:
@@ -183,33 +220,36 @@ func _show_location_levels(location_id: String) -> void:
 
 
 func _add_level_node(location_id: String, level_number: int, center: Vector2, unlocked: bool, done: bool) -> void:
+	var state_texture: Texture2D = LEVEL_NODE_LOCKED
+	if done:
+		state_texture = LEVEL_NODE_COMPLETE
+	elif unlocked:
+		state_texture = LEVEL_NODE_CURRENT
+	else:
+		state_texture = LEVEL_NODE_LOCKED
+
 	var button: Button = Button.new()
-	button.position = center - Vector2(41.0, 41.0)
-	button.size = Vector2(82.0, 82.0)
+	button.position = center - Vector2(45.0, 45.0)
+	button.size = Vector2(90.0, 90.0)
 	button.custom_minimum_size = button.size
 	button.text = str(level_number)
 	button.disabled = not unlocked
 	button.focus_mode = Control.FOCUS_ALL
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_apply_control_font(button, 24, COL_TEXT)
-	var fill: Color = Color(0.025, 0.13, 0.23, 0.99)
-	var border: Color = Color(0.36, 0.73, 1.0, 0.96)
-	if done:
-		fill = Color(0.035, 0.22, 0.13, 0.99)
-		border = Color(0.40, 0.93, 0.58, 0.98)
-	elif not unlocked:
-		fill = Color(0.018, 0.04, 0.07, 0.90)
-		border = Color(0.14, 0.22, 0.31, 0.75)
-	button.add_theme_stylebox_override("normal", _style_box(fill, border, 41, true))
-	button.add_theme_stylebox_override("hover", _style_box(Color(0.05, 0.20, 0.32, 1.0), Color(0.66, 0.88, 1.0, 1.0), 41, true))
-	button.add_theme_stylebox_override("pressed", _style_box(Color(0.03, 0.12, 0.20, 1.0), COL_PRIMARY, 41, false))
-	button.add_theme_stylebox_override("disabled", _style_box(fill, border, 41, false))
+	button.add_theme_color_override("font_disabled_color", Color(0.58, 0.64, 0.72, 0.92))
+	button.add_theme_stylebox_override("normal", _texture_style(state_texture))
+	button.add_theme_stylebox_override("hover", _texture_style(LEVEL_NODE_OPEN if unlocked else state_texture))
+	button.add_theme_stylebox_override("pressed", _texture_style(LEVEL_NODE_CURRENT))
+	button.add_theme_stylebox_override("disabled", _texture_style(LEVEL_NODE_LOCKED))
 	if unlocked:
 		button.pressed.connect(Callable(self, "_on_level_node_pressed").bind(location_id, level_number))
 	screen_layer.add_child(button)
 
 	var title: Label = _label(LEVEL_CATALOG.level_title(location_id, level_number), 13, COL_TEXT if unlocked else COL_MUTED, HORIZONTAL_ALIGNMENT_CENTER)
-	title.position = Vector2(center.x - 88.0, center.y + 46.0)
+	title.position = Vector2(center.x - 88.0, center.y + 49.0)
 	title.size = Vector2(176.0, 32.0)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_layer.add_child(title)
 
 
@@ -222,14 +262,52 @@ func _on_level_node_pressed(location_id: String, level_number: int) -> void:
 	_start_game()
 
 
-func _add_route(points: Array[Vector2], color: Color, width: float) -> void:
-	var route: Line2D = Line2D.new()
-	route.width = width
-	route.default_color = color
-	route.antialiased = true
+func _add_route(points: Array[Vector2], _color: Color, width: float) -> void:
+	if points.size() < 2:
+		return
+	var segment_texture: Texture2D = WORLD_PATH_SEGMENT if current_screen == "locations" else LEVEL_PATH_SEGMENT
+	var dot_texture: Texture2D = WORLD_PATH_DOT if current_screen == "locations" else LEVEL_PATH_DOT
+	var segment_height: float = maxf(12.0, width * 1.6)
+
+	for i in range(points.size() - 1):
+		var start: Vector2 = points[i]
+		var finish: Vector2 = points[i + 1]
+		var delta: Vector2 = finish - start
+		var length: float = delta.length()
+		if length <= 1.0:
+			continue
+		var segment: TextureRect = TextureRect.new()
+		segment.texture = segment_texture
+		segment.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		segment.stretch_mode = TextureRect.STRETCH_SCALE
+		segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		segment.size = Vector2(length, segment_height)
+		segment.position = start - Vector2(0.0, segment_height * 0.5)
+		segment.pivot_offset = Vector2(0.0, segment_height * 0.5)
+		segment.rotation = delta.angle()
+		screen_layer.add_child(segment)
+
+	var dot_size: float = 18.0 if current_screen == "locations" else 14.0
 	for point in points:
-		route.add_point(point)
-	screen_layer.add_child(route)
+		_add_map_texture(dot_texture, Rect2(point - Vector2(dot_size * 0.5, dot_size * 0.5), Vector2(dot_size, dot_size)), 1.0)
+
+
+func _add_map_texture(texture: Texture2D, rect: Rect2, opacity: float) -> void:
+	var art: TextureRect = TextureRect.new()
+	art.texture = texture
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_SCALE
+	art.position = rect.position
+	art.size = rect.size
+	art.modulate = Color(1.0, 1.0, 1.0, opacity)
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	screen_layer.add_child(art)
+
+
+func _texture_style(texture: Texture2D) -> StyleBoxTexture:
+	var style: StyleBoxTexture = StyleBoxTexture.new()
+	style.texture = texture
+	return style
 
 
 func _add_location_background(parent: Control, location_id: String, darkness: float) -> void:
