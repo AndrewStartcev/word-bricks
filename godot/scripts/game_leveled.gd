@@ -69,36 +69,39 @@ func _drop_interval() -> float:
 
 func _draw_left_panel() -> void:
 	var panel: Rect2 = Rect2(125.0, 94.0, 330.0, 720.0)
-	# Use the delivered stage-2 sidebar art here too; this level-aware override
-	# used to bypass the production skin from game_presentation.gd.
 	draw_texture_rect(UI_SIDEBAR_LEFT, panel, false)
 
-	draw_texture_rect(chapter_icon, Rect2(148.0, 120.0, 56.0, 56.0), false)
-	_draw_text("Локация %d" % chapter_number, Vector2(220.0, 140.0), 16, Color(0.72, 0.80, 0.91))
-	_draw_text(chapter_title, Vector2(220.0, 174.0), 29, Color("73e891"))
-	_draw_text("Уровень %d / %d" % [round_number, LEVEL_CATALOG.LEVELS_PER_LOCATION], Vector2(150.0, 214.0), 17, Color("7dc9ff"))
-	_draw_text(round_title, Vector2(150.0, 240.0), 16, Color(0.78, 0.84, 0.94))
+	# Keep content clear of the ornate frame on both sides.
+	const CONTENT_LEFT: float = 165.0
+	const CONTENT_RIGHT: float = 425.0
+	const CONTENT_WIDTH: float = CONTENT_RIGHT - CONTENT_LEFT
+
+	draw_texture_rect(chapter_icon, Rect2(CONTENT_LEFT, 120.0, 52.0, 52.0), false)
+	_draw_text("Локация %d" % chapter_number, Vector2(232.0, 140.0), 16, Color(0.72, 0.80, 0.91))
+	_draw_text(chapter_title, Vector2(232.0, 174.0), 29, Color("73e891"))
+	_draw_text("Уровень %d / %d" % [round_number, LEVEL_CATALOG.LEVELS_PER_LOCATION], Vector2(CONTENT_LEFT, 214.0), 17, Color("7dc9ff"))
+	_draw_text(round_title, Vector2(CONTENT_LEFT, 240.0), 16, Color(0.78, 0.84, 0.94))
 
 	var total_words: int = maxi(1, chapter_words.size())
-	draw_rect(Rect2(150.0, 260.0, 280.0, 8.0), Color(0.008, 0.026, 0.060, 0.88), true)
+	draw_rect(Rect2(CONTENT_LEFT, 260.0, CONTENT_WIDTH, 8.0), Color(0.008, 0.026, 0.060, 0.88), true)
 	var ratio: float = float(completed_words.size()) / float(total_words)
-	draw_rect(Rect2(150.0, 260.0, 280.0 * ratio, 8.0), Color("55d979"), true)
+	draw_rect(Rect2(CONTENT_LEFT, 260.0, CONTENT_WIDTH * ratio, 8.0), Color("55d979"), true)
 
-	draw_line(Vector2(145.0, 292.0), Vector2(435.0, 292.0), Color(0.45, 0.34, 0.18, 0.58), 1.0)
-	_draw_text("Слово", Vector2(150.0, 321.0), 17, Color(0.72, 0.80, 0.91))
-	_draw_current_word(Vector2(145.0, 336.0))
+	draw_line(Vector2(160.0, 292.0), Vector2(CONTENT_RIGHT, 292.0), Color(0.45, 0.34, 0.18, 0.58), 1.0)
+	_draw_text("Слово", Vector2(CONTENT_LEFT, 321.0), 17, Color(0.72, 0.80, 0.91))
+	_draw_current_word(Vector2(160.0, 336.0))
 
-	draw_texture_rect(ICON_CLUE, Rect2(150.0, 409.0, 24.0, 24.0), false)
+	draw_texture_rect(ICON_CLUE, Rect2(CONTENT_LEFT, 409.0, 24.0, 24.0), false)
 	var clue: String = ""
 	if word_index >= 0 and word_index < chapter_clues.size():
 		clue = String(chapter_clues[word_index])
-	_draw_text(clue, Vector2(184.0, 430.0), 16, Color(0.88, 0.91, 0.97))
+	_draw_text(clue, Vector2(200.0, 430.0), 16, Color(0.88, 0.91, 0.97))
 
 	var marker_y: float = 492.0
-	_draw_text("Слова уровня", Vector2(150.0, marker_y), 15, Color(0.62, 0.70, 0.82))
-	var marker_step: float = 280.0 / float(total_words)
+	_draw_text("Слова уровня", Vector2(CONTENT_LEFT, marker_y), 15, Color(0.62, 0.70, 0.82))
+	var marker_step: float = CONTENT_WIDTH / float(total_words)
 	for i in range(total_words):
-		var marker_rect: Rect2 = Rect2(150.0 + float(i) * marker_step, marker_y + 18.0, maxf(18.0, marker_step - 13.0), 8.0)
+		var marker_rect: Rect2 = Rect2(CONTENT_LEFT + float(i) * marker_step, marker_y + 18.0, maxf(18.0, marker_step - 13.0), 8.0)
 		var marker_color: Color = Color(0.08, 0.17, 0.29, 0.92)
 		if i < completed_words.size():
 			marker_color = Color("65df86")
@@ -108,8 +111,8 @@ func _draw_left_panel() -> void:
 
 	if not completed_words.is_empty():
 		var last_word: String = completed_words[completed_words.size() - 1]
-		draw_texture_rect(ICON_CHECK, Rect2(150.0, 554.0, 24.0, 24.0), false)
-		_draw_text(last_word, Vector2(185.0, 575.0), 18, Color("73e891"))
+		draw_texture_rect(ICON_CHECK, Rect2(CONTENT_LEFT, 554.0, 24.0, 24.0), false)
+		_draw_text(last_word, Vector2(200.0, 575.0), 18, Color("73e891"))
 
 
 func _word_slot_center(slot_index: int) -> Vector2:
@@ -117,5 +120,5 @@ func _word_slot_center(slot_index: int) -> Vector2:
 	var layout: Dictionary = _word_layout(word.length())
 	var slot_size: float = float(layout["slot"])
 	var gap: float = float(layout["gap"])
-	var origin: Vector2 = Vector2(145.0, 336.0)
+	var origin: Vector2 = Vector2(160.0, 336.0)
 	return origin + Vector2(float(slot_index) * (slot_size + gap) + slot_size * 0.5, slot_size * 0.5)
