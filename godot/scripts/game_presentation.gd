@@ -31,16 +31,19 @@ func _draw_owl() -> void:
 
 
 func _draw_top_hud() -> void:
-	_draw_hud_stat(Rect2(980.0, 18.0, 190.0, 66.0), ICON_SCORE, "Очки", str(score), Color("ffd253"), true)
-	_draw_hud_stat(Rect2(1172.0, 18.0, 156.0, 66.0), ICON_COMBO, "Комбо", "x%d" % maxi(combo, 1), Color("ffc33b"), false)
-	_draw_hud_stat(Rect2(1330.0, 18.0, 174.0, 66.0), ICON_TIME, "Время", _format_time(), Color.WHITE, false)
+	# Preserve the delivered artwork proportions instead of flattening the HUD skins.
+	_draw_hud_stat(Rect2(980.0, 16.0, 184.0, 69.0), ICON_SCORE, "Очки", str(score), Color("ffd253"), true)
+	_draw_hud_stat(Rect2(1170.0, 13.0, 146.0, 73.0), ICON_COMBO, "Комбо", "x%d" % maxi(combo, 1), Color("ffc33b"), false)
+	_draw_hud_stat(Rect2(1322.0, 13.0, 146.0, 73.0), ICON_TIME, "Время", _format_time(), Color.WHITE, false)
 
 
 func _draw_hud_stat(rect: Rect2, icon: Texture2D, title: String, value: String, value_color: Color, large: bool) -> void:
 	draw_texture_rect(UI_HUD_BOX_LARGE if large else UI_HUD_BOX_SMALL, rect, false)
-	draw_texture_rect(icon, Rect2(rect.position.x + 14.0, rect.position.y + 15.0, 36.0, 36.0), false)
-	_draw_text(title, Vector2(rect.position.x + 58.0, rect.position.y + 25.0), 15, Color("c8d5e8"))
-	_draw_text(value, Vector2(rect.position.x + 58.0, rect.position.y + 52.0), 22, value_color)
+	var icon_size: float = 34.0
+	var icon_y: float = rect.position.y + (rect.size.y - icon_size) * 0.5
+	draw_texture_rect(icon, Rect2(rect.position.x + 13.0, icon_y, icon_size, icon_size), false)
+	_draw_text(title, Vector2(rect.position.x + 55.0, rect.position.y + 26.0), 14, Color("c8d5e8"))
+	_draw_text(value, Vector2(rect.position.x + 55.0, rect.position.y + 53.0), 21, value_color)
 
 
 func _draw_left_panel() -> void:
@@ -84,16 +87,20 @@ func _draw_right_panel() -> void:
 	var panel: Rect2 = Rect2(990.0, 94.0, 315.0, 420.0)
 	draw_texture_rect(UI_SIDEBAR_RIGHT, panel, false)
 
-	_draw_text("Дальше", Vector2(1020.0, 139.0), 20, Color(0.86, 0.91, 0.98))
-	var preview_rect: Rect2 = Rect2(1015.0, 158.0, 265.0, 205.0)
+	# Center the section title in the decorative panel.
+	_draw_text_centered("Дальше", Rect2(1008.0, 107.0, 279.0, 48.0), 21, Color(0.90, 0.94, 0.99))
+
+	# sidebar_inner_box is a square 360x360 asset: keep it square so its frame is not crushed.
+	var preview_rect: Rect2 = Rect2(1031.0, 158.0, 232.0, 232.0)
 	draw_texture_rect(UI_SIDEBAR_INNER, preview_rect, false)
 	_draw_next_piece(preview_rect)
 
-	var hint_visual: Rect2 = Rect2(1015.0, 392.0, 265.0, 72.0)
-	draw_texture_rect(UI_SIDEBAR_INNER, hint_visual, false)
-	draw_texture_rect(ICON_HINT, Rect2(1032.0, 409.0, 36.0, 36.0), false)
-	_draw_text("Подсказка", Vector2(1080.0, 435.0), 19, Color("ffe06a"))
-	_draw_text("×%d" % hint_charges, Vector2(1231.0, 435.0), 18, Color.WHITE)
+	# The hint is a wide row, so use the wide HUD skin instead of flattening the square inner box.
+	var hint_visual: Rect2 = Rect2(1022.0, 407.0, 250.0, 94.0)
+	draw_texture_rect(UI_HUD_BOX_LARGE, hint_visual, false)
+	draw_texture_rect(ICON_HINT, Rect2(1041.0, 437.0, 34.0, 34.0), false)
+	_draw_text("Подсказка", Vector2(1086.0, 462.0), 19, Color("ffe06a"))
+	_draw_text("×%d" % hint_charges, Vector2(1230.0, 462.0), 18, Color.WHITE)
 
 
 func _draw_controls() -> void:
