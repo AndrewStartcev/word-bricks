@@ -40,23 +40,26 @@ func _draw_owl() -> void:
 
 
 func _draw_top_hud() -> void:
-	_draw_hud_stat(Rect2(980.0, 16.0, 184.0, 69.0), ICON_SCORE, "Очки", str(score), Color("ffd253"), true)
-	_draw_hud_stat(Rect2(1170.0, 13.0, 146.0, 73.0), ICON_COMBO, "Комбо", "x%d" % maxi(combo, 1), Color("ffc33b"), false)
-	_draw_hud_stat(Rect2(1322.0, 13.0, 146.0, 73.0), ICON_TIME, "Время", _format_time(), Color.WHITE, false)
+	# One optical baseline for the whole stats group. The score box is slightly
+	# wider, but all three cards now share the same height, icon size and padding.
+	_draw_hud_stat(Rect2(976.0, 18.0, 178.0, 64.0), ICON_SCORE, "Очки", str(score), Color("ffd253"), true)
+	_draw_hud_stat(Rect2(1166.0, 18.0, 145.0, 64.0), ICON_COMBO, "Комбо", "x%d" % maxi(combo, 1), Color("ffc33b"), false)
+	_draw_hud_stat(Rect2(1323.0, 18.0, 145.0, 64.0), ICON_TIME, "Время", _format_time(), Color.WHITE, false)
 
 
 func _draw_hud_stat(rect: Rect2, icon: Texture2D, title: String, value: String, value_color: Color, large: bool) -> void:
 	draw_texture_rect(UI_HUD_BOX_LARGE if large else UI_HUD_BOX_SMALL, rect, false)
-	var icon_size: float = 32.0
-	var icon_x: float = rect.position.x + 16.0
+
+	var icon_size: float = 28.0
+	var icon_x: float = rect.position.x + 15.0
 	var icon_y: float = rect.position.y + (rect.size.y - icon_size) * 0.5
 	draw_texture_rect(icon, Rect2(icon_x, icon_y, icon_size, icon_size), false)
 
-	# Center both text rows inside the usable area to keep left/right breathing room.
-	var text_x: float = rect.position.x + 52.0
-	var text_width: float = rect.size.x - 68.0
-	_draw_text_centered(title, Rect2(text_x, rect.position.y + 4.0, text_width, 28.0), 14, Color("c8d5e8"))
-	_draw_text_centered(value, Rect2(text_x, rect.position.y + 29.0, text_width, 31.0), 21, value_color)
+	var text_x: float = rect.position.x + 49.0
+	var text_width: float = rect.size.x - 61.0
+	# Compact title/value stack: small caption, larger visually heavier value.
+	_draw_text_centered(title, Rect2(text_x, rect.position.y + 5.0, text_width, 21.0), 12, Color("c8d5e8"))
+	_draw_text_centered_bold(value, Rect2(text_x, rect.position.y + 23.0, text_width, 32.0), 22, value_color)
 
 
 func _draw_left_panel() -> void:
@@ -98,7 +101,8 @@ func _draw_left_panel() -> void:
 
 
 func _draw_right_panel() -> void:
-	var panel: Rect2 = Rect2(990.0, 94.0, 315.0, 420.0)
+	# Give the hint row real breathing room from the lower ornament of the panel.
+	var panel: Rect2 = Rect2(990.0, 94.0, 315.0, 452.0)
 	draw_texture_rect(UI_SIDEBAR_RIGHT, panel, false)
 
 	_draw_text_centered("Дальше", Rect2(1008.0, 107.0, 279.0, 48.0), 21, Color(0.90, 0.94, 0.99))
@@ -107,11 +111,11 @@ func _draw_right_panel() -> void:
 	draw_texture_rect(UI_SIDEBAR_INNER, preview_rect, false)
 	_draw_next_piece(preview_rect)
 
-	var hint_visual: Rect2 = Rect2(1022.0, 407.0, 250.0, 94.0)
+	var hint_visual: Rect2 = Rect2(1022.0, 410.0, 250.0, 86.0)
 	draw_texture_rect(UI_HUD_BOX_LARGE, hint_visual, false)
-	draw_texture_rect(ICON_HINT, Rect2(1041.0, 437.0, 34.0, 34.0), false)
-	_draw_text("Подсказка", Vector2(1086.0, 462.0), 19, Color("ffe06a"))
-	_draw_text("×%d" % hint_charges, Vector2(1230.0, 462.0), 18, Color.WHITE)
+	draw_texture_rect(ICON_HINT, Rect2(1042.0, 436.0, 30.0, 30.0), false)
+	_draw_text("Подсказка", Vector2(1083.0, 460.0), 18, Color("ffe06a"))
+	_draw_text("×%d" % hint_charges, Vector2(1230.0, 460.0), 17, Color.WHITE)
 
 
 func _draw_controls() -> void:
@@ -141,3 +145,12 @@ func _draw_text_centered(text: String, rect: Rect2, size: int, color: Color) -> 
 		size,
 		color
 	)
+
+
+func _draw_text_centered_bold(text: String, rect: Rect2, size: int, color: Color) -> void:
+	# Slight double-pass gives the dynamic value a stronger weight without making
+	# every UI label bold or introducing another font resource.
+	var baseline_y: float = rect.position.y + rect.size.y * 0.5 + float(size) * 0.36
+	var baseline: Vector2 = Vector2(rect.position.x, baseline_y)
+	draw_string(presentation_font, baseline + Vector2(-0.45, 0.0), text, HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, size, color)
+	draw_string(presentation_font, baseline + Vector2(0.45, 0.0), text, HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, size, color)
