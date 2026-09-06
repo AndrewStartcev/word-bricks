@@ -1,40 +1,23 @@
-# Этап 4 — точка продолжения
-Дата: 2026-09-06. Ветка: main.
-Статус: приостановлен по указанию пользователя — осталось 4% пятитичасового лимита (96% использовано), 53% недельного.
-Не возобновлять без команды пользователя. Не переходить к этапу 5.
+# Этап 4 — состояние
+Дата: 2026-09-06.
+Все 18 PNG и icon_loading.svg по ТЗ присутствуют. В текущем продолжении добавлены 16 PNG и 1 SVG. Ранее готовые loading_bar_frame.png и loading_bar_fill.png не изменялись.
+Git не использовался. Код, сцены и project.godot не редактировались.
 
-## Сохранено
-- godot/assets/ui/loading/loading_bar_frame.png — 1000×110, PNG RGBA.
-- godot/assets/ui/loading/loading_bar_fill.png — 900×60, PNG RGBA.
+## Проверено
+Файлы читаются, размеры определены, у PNG есть прозрачный внешний фон, SVG корректный XML.
+Книги, фонарь, кристаллы переиспользованы между decor и loading.
+Панели предыдущих этапов переиспользованы для chapter_title_plate, chapter_card, transition_name_plate.
+path_glow переиспользован для loading_bar_glow.
+Свиток создан в двух размерах без отдельной генерации второго варианта.
 
-Оба файла созданы встроенным imagegen и сохранены в проект сразу.
-Финальная проверка совместной сборки полосы ещё не завершена: проверить совпадение заполнения с прорезью рамки; у заполнения есть мягкий внешний голубой ореол. При необходимости исправить перед признанием загрузочной полосы готовой.
+## Замечание к ранее готовому файлу
+loading_bar_frame.png: цветные точки в предпросмотре проверены по пикселям — максимальный alpha у красных RGB-пикселей равен 1/255. Непрозрачных красных артефактов не обнаружено. Рамка оставлена без изменений.
+Заполнение 900×60 можно размещать под рамкой 1000×110 с центровкой (50,25); требуется проверить результат при разных значениях прогресса в сборке интерфейса.
 
-## Осталось
-- godot/assets/ui/loading/loading_bar_glow.png
-- godot/assets/ui/loading/loading_decor_books.png
-- godot/assets/ui/loading/loading_decor_lantern.png
-- godot/assets/ui/loading/loading_decor_crystals.png
-- godot/assets/ui/icons/icon_loading.svg
-- godot/assets/ui/decor/decor_books_stack.png
-- godot/assets/ui/decor/decor_lantern.png
-- godot/assets/ui/decor/decor_crystals.png
-- godot/assets/ui/decor/decor_wood_sign.png
-- godot/assets/ui/decor/decor_branch_leaves.png
-- godot/assets/ui/decor/decor_scroll_small.png
-- godot/assets/ui/decor/decor_scroll_large.png
-- godot/assets/ui/transitions/chapter_title_plate.png
-- godot/assets/ui/transitions/chapter_card.png
-- godot/assets/ui/transitions/transition_arrow.png
-- godot/assets/ui/transitions/transition_separator.png
-- godot/assets/ui/transitions/transition_name_plate.png
-- При наличии подходящего лицензированного шрифта с кириллицей: godot/assets/fonts/game_regular.ttf, game_semibold.ttf, game_bold.ttf. Не блокировать этап, если шрифт не найден.
-- Итоговая проверка файлов, размеров, прозрачности и отсутствия текста.
+## Необязательный шрифт
+Локально не найден подходящий комплект regular/semibold/bold с подтверждённой лицензией на распространение и кириллицей. game_regular.ttf, game_semibold.ttf, game_bold.ttf не добавлены. По ТЗ это не блокирует поставку остальных ассетов.
 
-## Правила продолжения
-ТЗ: C:/Users/Роман/Desktop/SLOVOPAD_UI_ASSET_PACK_TZ_UPDATED.md.
-Работать экономно, каждый готовый файл сохранять сразу по финальному пути.
-Разрешены только godot/assets/** и godot/docs/**. Код, сцены, project.godot не менять.
-Проверять лимит между небольшими группами: при остатке ниже 5% остановиться и обновить этот файл.
-Для экономии можно переиспользовать декор между loading и decor, адаптируя размеры.
-Этапы 1–3 завершены ранее.
+## Дальше
+Этап 5 не начат. Реестр, заметки по использованию и общий preview sheet — только по следующей команде.
+Последняя проверка лимита: использовано 35% пятитичасового окна, остаток 65%; порог остановки не достигнут.
+
