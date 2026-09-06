@@ -36,6 +36,7 @@ func _debug_cycle_level() -> void:
 
 
 func _show_main_menu() -> void:
+	_stop_platform_gameplay_final()
 	_dispose_game()
 	_clear_layer(screen_layer)
 	_clear_layer(gameplay_ui_layer)
@@ -76,6 +77,12 @@ func _show_main_menu() -> void:
 
 	_animate_in(logo)
 	_animate_in(play_button)
+
+
+func _show_settings_modal(from_game: bool) -> void:
+	if from_game:
+		_stop_platform_gameplay_final()
+	super._show_settings_modal(from_game)
 
 
 func _add_world_header() -> void:
