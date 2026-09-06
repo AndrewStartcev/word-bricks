@@ -43,52 +43,60 @@ func _show_main_menu() -> void:
 	if app_audio != null:
 		app_audio.set_suspended("gameplay", false)
 
-	_add_background(screen_layer, 0.16)
+	_add_background(screen_layer, 0.14)
 
 	var owl: TextureRect = TextureRect.new()
 	owl.texture = OWL_IDLE
 	owl.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	owl.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	owl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	owl.position = Vector2(56.0, 500.0)
-	owl.size = Vector2(350.0, 350.0)
+	owl.position = Vector2(46.0, 500.0)
+	owl.size = Vector2(360.0, 360.0)
 	screen_layer.add_child(owl)
 
 	var panel: PanelContainer = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(650.0, 700.0)
+	panel.custom_minimum_size = Vector2(720.0, 710.0)
 	panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	_center_control(panel, Vector2(70.0, -10.0))
+	_center_control(panel, Vector2(78.0, -8.0))
 	screen_layer.add_child(panel)
 
-	var margin: MarginContainer = _margin(28, 8, 28, 24)
+	var margin: MarginContainer = _margin(20, 0, 20, 18)
 	panel.add_child(margin)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 18)
+	column.add_theme_constant_override("separation", 20)
 	margin.add_child(column)
 
 	var logo: TextureRect = TextureRect.new()
 	logo.texture = UI_LOGO
 	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	logo.custom_minimum_size = Vector2(600.0, 270.0)
+	logo.custom_minimum_size = Vector2(680.0, 300.0)
 	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(logo)
-	column.add_child(_modal_spacer(8.0))
+	column.add_child(_modal_spacer(2.0))
 
-	var play_button: Button = _button("Играть", "primary", UI_ICON_PLAY, 112.0)
+	var play_button: Button = _button("Играть", "primary", UI_ICON_PLAY, 116.0)
+	_style_menu_button(play_button, 560.0)
 	play_button.pressed.connect(_on_play_pressed)
 	column.add_child(play_button)
 
-	var levels_button: Button = _button("Карта мира", "secondary", UI_ICON_WORLD_MAP, 98.0)
+	var levels_button: Button = _button("Карта мира", "secondary", UI_ICON_WORLD_MAP, 96.0)
+	_style_menu_button(levels_button, 520.0)
 	levels_button.pressed.connect(_on_levels_pressed)
 	column.add_child(levels_button)
 
-	var settings_button: Button = _button("Настройки", "secondary", ICON_SETTINGS, 98.0)
+	var settings_button: Button = _button("Настройки", "secondary", ICON_SETTINGS, 96.0)
+	_style_menu_button(settings_button, 520.0)
 	settings_button.pressed.connect(_on_menu_settings_pressed)
 	column.add_child(settings_button)
 
 	_animate_in(panel)
+
+
+func _style_menu_button(button: Button, width: float) -> void:
+	button.custom_minimum_size.x = width
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 
 func _show_pause_modal() -> void:
