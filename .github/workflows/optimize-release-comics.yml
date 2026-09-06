@@ -1,0 +1,42 @@
+name: Optimize release comics
+
+on:
+  push:
+    paths:
+      - '.github/workflows/optimize-release-comics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Convert comic PNGs to WebP
+        run: python tools/optimize_release_comics.py
+
+      - name: Commit optimized assets
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add godot/assets/comics godot/scripts godot/docs docs tools
+          git commit -m "assets: optimize comic art for web release"
+          git push origin HEAD:main
