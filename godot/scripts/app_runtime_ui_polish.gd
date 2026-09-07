@@ -1,38 +1,7 @@
 extends "res://scripts/app_runtime_ui_final.gd"
 
 # Final visual polish for the approved menu/map composition.
-# Debug-only F cycling is intentionally kept out of release behaviour.
-
-
-func _input(event: InputEvent) -> void:
-	if OS.is_debug_build() and event is InputEventKey:
-		var key_event: InputEventKey = event as InputEventKey
-		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_F:
-			_debug_cycle_level()
-			get_viewport().set_input_as_handled()
-			return
-	super._input(event)
-
-
-func _debug_cycle_level() -> void:
-	var order: Array[String] = FINAL_LEVEL_CATALOG.LOCATION_ORDER
-	var location_index: int = order.find(current_level_id)
-	if location_index < 0:
-		location_index = 0
-		current_level_id = order[0]
-
-	if current_screen == "game":
-		current_stage_number += 1
-	else:
-		current_stage_number = clampi(current_stage_number, 1, 10)
-
-	if current_stage_number > 10:
-		location_index = (location_index + 1) % order.size()
-		current_level_id = order[location_index]
-		current_stage_number = 1
-
-	intro_seen = true
-	_start_game()
+# Release runtime contains no debug level-cycling shortcuts.
 
 
 func _show_main_menu() -> void:
