@@ -7,12 +7,12 @@ extends "res://scripts/app_runtime_compat.gd"
 
 const SAVE_VERSION: int = 2
 
-const INTRO_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/intro/intro_01_world.webp"),
-	preload("res://assets/comics/intro/intro_02_wizard.webp"),
-	preload("res://assets/comics/intro/intro_03_disappearance.webp"),
-	preload("res://assets/comics/intro/intro_04_owl.webp"),
-	preload("res://assets/comics/intro/intro_05_journey.webp")
+const INTRO_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/intro/intro_01_world.webp",
+	"res://assets/comics/intro/intro_02_wizard.webp",
+	"res://assets/comics/intro/intro_03_disappearance.webp",
+	"res://assets/comics/intro/intro_04_owl.webp",
+	"res://assets/comics/intro/intro_05_journey.webp"
 ]
 
 # Comic pages: two panels on the first two pages and a final splash page.
@@ -67,6 +67,12 @@ func _on_play_pressed() -> void:
 		_show_intro(0)
 
 
+
+func _story_texture(path: String) -> Texture2D:
+	var resource: Resource = ResourceLoader.load(path)
+	return resource as Texture2D
+
+
 func _show_intro(page_index: int = 0) -> void:
 	_dispose_game()
 	_clear_layer(screen_layer)
@@ -107,11 +113,11 @@ func _render_intro_page() -> void:
 	var page: Array = INTRO_PAGES[intro_index]
 	if page.size() == 1:
 		# Final comic splash page.
-		_add_comic_panel(INTRO_FRAMES[int(page[0])], Rect2(150.0, 88.0, 1300.0, 731.0))
+		_add_comic_panel(_story_texture(INTRO_FRAME_PATHS[int(page[0])]), Rect2(150.0, 88.0, 1300.0, 731.0))
 	else:
 		# Classic two-panel spread. Each source frame remains uncropped and readable.
-		_add_comic_panel(INTRO_FRAMES[int(page[0])], Rect2(62.0, 165.0, 718.0, 404.0))
-		_add_comic_panel(INTRO_FRAMES[int(page[1])], Rect2(820.0, 165.0, 718.0, 404.0))
+		_add_comic_panel(_story_texture(INTRO_FRAME_PATHS[int(page[0])]), Rect2(62.0, 165.0, 718.0, 404.0))
+		_add_comic_panel(_story_texture(INTRO_FRAME_PATHS[int(page[1])]), Rect2(820.0, 165.0, 718.0, 404.0))
 
 	var counter_panel: PanelContainer = _panel(Vector2(112.0, 44.0), Color(0.008, 0.025, 0.055, 0.84))
 	counter_panel.position = Vector2(48.0, 38.0)

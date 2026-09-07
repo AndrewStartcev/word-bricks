@@ -7,10 +7,10 @@ const FOREST_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/back
 const VILLAGE_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_village.webp")
 const VILLAGE_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_village.svg")
 
-const VILLAGE_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/village_unlock/village_unlock_01.webp"),
-	preload("res://assets/comics/village_unlock/village_unlock_02.webp"),
-	preload("res://assets/comics/village_unlock/village_unlock_03.webp")
+const VILLAGE_TRANSITION_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/village_unlock/village_unlock_01.webp",
+	"res://assets/comics/village_unlock/village_unlock_02.webp",
+	"res://assets/comics/village_unlock/village_unlock_03.webp"
 ]
 
 var current_level_id: String = "forest"
@@ -255,9 +255,9 @@ func _show_village_transition() -> void:
 	screen_layer.add_child(page_back)
 
 	# One comic page with three panels: a large success frame and two story beats.
-	_add_comic_panel(VILLAGE_TRANSITION_FRAMES[0], Rect2(55.0, 145.0, 720.0, 405.0))
-	_add_comic_panel(VILLAGE_TRANSITION_FRAMES[1], Rect2(825.0, 70.0, 720.0, 405.0))
-	_add_comic_panel(VILLAGE_TRANSITION_FRAMES[2], Rect2(825.0, 493.0, 720.0, 405.0))
+	_add_comic_panel(_story_texture(VILLAGE_TRANSITION_FRAME_PATHS[0]), Rect2(55.0, 145.0, 720.0, 405.0))
+	_add_comic_panel(_story_texture(VILLAGE_TRANSITION_FRAME_PATHS[1]), Rect2(825.0, 70.0, 720.0, 405.0))
+	_add_comic_panel(_story_texture(VILLAGE_TRANSITION_FRAME_PATHS[2]), Rect2(825.0, 493.0, 720.0, 405.0))
 
 	var title: Label = _label("Лес спасён", 28, COL_GREEN, HORIZONTAL_ALIGNMENT_CENTER)
 	title.position = Vector2(180.0, 595.0)

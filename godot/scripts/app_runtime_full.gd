@@ -18,31 +18,31 @@ const CITY_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter
 const FAIRYTALES_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_fairytales.svg")
 const TOWER_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_tower.svg")
 
-const SEA_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/sea_unlock/sea_unlock_01.webp"),
-	preload("res://assets/comics/sea_unlock/sea_unlock_02.webp"),
-	preload("res://assets/comics/sea_unlock/sea_unlock_03.webp")
+const SEA_TRANSITION_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/sea_unlock/sea_unlock_01.webp",
+	"res://assets/comics/sea_unlock/sea_unlock_02.webp",
+	"res://assets/comics/sea_unlock/sea_unlock_03.webp"
 ]
-const CITY_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/city_unlock/city_unlock_01.webp"),
-	preload("res://assets/comics/city_unlock/city_unlock_02.webp"),
-	preload("res://assets/comics/city_unlock/city_unlock_03.webp")
+const CITY_TRANSITION_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/city_unlock/city_unlock_01.webp",
+	"res://assets/comics/city_unlock/city_unlock_02.webp",
+	"res://assets/comics/city_unlock/city_unlock_03.webp"
 ]
-const FAIRYTALES_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_01.webp"),
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_02.webp"),
-	preload("res://assets/comics/fairytales_unlock/fairytales_unlock_03.webp")
+const FAIRYTALES_TRANSITION_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/fairytales_unlock/fairytales_unlock_01.webp",
+	"res://assets/comics/fairytales_unlock/fairytales_unlock_02.webp",
+	"res://assets/comics/fairytales_unlock/fairytales_unlock_03.webp"
 ]
-const TOWER_TRANSITION_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/tower_unlock/tower_unlock_01.webp"),
-	preload("res://assets/comics/tower_unlock/tower_unlock_02.webp"),
-	preload("res://assets/comics/tower_unlock/tower_unlock_03.webp")
+const TOWER_TRANSITION_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/tower_unlock/tower_unlock_01.webp",
+	"res://assets/comics/tower_unlock/tower_unlock_02.webp",
+	"res://assets/comics/tower_unlock/tower_unlock_03.webp"
 ]
-const FINALE_FRAMES: Array[Texture2D] = [
-	preload("res://assets/comics/finale/finale_01.webp"),
-	preload("res://assets/comics/finale/finale_02.webp"),
-	preload("res://assets/comics/finale/finale_03.webp"),
-	preload("res://assets/comics/finale/finale_04.webp")
+const FINALE_FRAME_PATHS: Array[String] = [
+	"res://assets/comics/finale/finale_01.webp",
+	"res://assets/comics/finale/finale_02.webp",
+	"res://assets/comics/finale/finale_03.webp",
+	"res://assets/comics/finale/finale_04.webp"
 ]
 const FINALE_PAGES: Array = [[0, 1], [2, 3]]
 
@@ -480,8 +480,8 @@ func _show_finale(page_index: int = 0) -> void:
 	screen_layer.add_child(page_back)
 
 	var page: Array = FINALE_PAGES[finale_page]
-	_add_comic_panel(FINALE_FRAMES[int(page[0])], Rect2(62.0, 165.0, 718.0, 404.0))
-	_add_comic_panel(FINALE_FRAMES[int(page[1])], Rect2(820.0, 165.0, 718.0, 404.0))
+	_add_comic_panel(_story_texture(FINALE_FRAME_PATHS[int(page[0])]), Rect2(62.0, 165.0, 718.0, 404.0))
+	_add_comic_panel(_story_texture(FINALE_FRAME_PATHS[int(page[1])]), Rect2(820.0, 165.0, 718.0, 404.0))
 	var counter: Label = _label("Финал · %d / %d" % [finale_page + 1, FINALE_PAGES.size()], 17, COL_TEXT, HORIZONTAL_ALIGNMENT_LEFT)
 	counter.position = Vector2(58.0, 46.0)
 	counter.size = Vector2(220.0, 36.0)
@@ -561,13 +561,20 @@ func _total_completed_levels() -> int:
 
 
 func _transition_frames(target_id: String) -> Array:
+	var paths: Array[String] = []
 	match target_id:
-		"village": return VILLAGE_TRANSITION_FRAMES
-		"sea": return SEA_TRANSITION_FRAMES
-		"city": return CITY_TRANSITION_FRAMES
-		"fairytales": return FAIRYTALES_TRANSITION_FRAMES
-		"tower": return TOWER_TRANSITION_FRAMES
+		"village": paths = VILLAGE_TRANSITION_FRAME_PATHS
+		"sea": paths = SEA_TRANSITION_FRAME_PATHS
+		"city": paths = CITY_TRANSITION_FRAME_PATHS
+		"fairytales": paths = FAIRYTALES_TRANSITION_FRAME_PATHS
+		"tower": paths = TOWER_TRANSITION_FRAME_PATHS
 		_: return []
+	var frames: Array[Texture2D] = []
+	for path in paths:
+		var texture: Texture2D = _story_texture(path)
+		if texture != null:
+			frames.append(texture)
+	return frames
 
 
 func _icon_for_location(location_id: String) -> Texture2D:
