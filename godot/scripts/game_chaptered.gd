@@ -4,8 +4,8 @@ extends "res://scripts/game_presentation.gd"
 # The core board mechanics stay in game.gd; this layer swaps content, background,
 # chapter icon and word layout before _ready() runs.
 
-const FOREST_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.png")
-const VILLAGE_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_village.png")
+const FOREST_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.webp")
+const VILLAGE_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_village.webp")
 const FOREST_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_forest.svg")
 const VILLAGE_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_village.svg")
 

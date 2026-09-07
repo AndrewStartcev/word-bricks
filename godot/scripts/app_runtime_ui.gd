@@ -3,54 +3,54 @@ extends "res://scripts/app_runtime_yandex.gd"
 # Production UI skin. This layer applies the delivered visual assets while
 # keeping campaign, save and Yandex Games behaviour in the inherited runtime.
 
-const UI_LOGO: Texture2D = preload("res://assets/ui/logo/logo_main_small.png")
+const UI_LOGO: Texture2D = preload("res://assets/ui/logo/logo_main_small.webp")
 
-const UI_BUTTON_PRIMARY_NORMAL: Texture2D = preload("res://assets/ui/buttons/button_primary_normal.png")
-const UI_BUTTON_PRIMARY_HOVER: Texture2D = preload("res://assets/ui/buttons/button_primary_hover.png")
-const UI_BUTTON_PRIMARY_PRESSED: Texture2D = preload("res://assets/ui/buttons/button_primary_pressed.png")
-const UI_BUTTON_PRIMARY_DISABLED: Texture2D = preload("res://assets/ui/buttons/button_primary_disabled.png")
+const UI_BUTTON_PRIMARY_NORMAL: Texture2D = preload("res://assets/ui/buttons/button_primary_normal.webp")
+const UI_BUTTON_PRIMARY_HOVER: Texture2D = preload("res://assets/ui/buttons/button_primary_hover.webp")
+const UI_BUTTON_PRIMARY_PRESSED: Texture2D = preload("res://assets/ui/buttons/button_primary_pressed.webp")
+const UI_BUTTON_PRIMARY_DISABLED: Texture2D = preload("res://assets/ui/buttons/button_primary_disabled.webp")
 
-const UI_BUTTON_SECONDARY_NORMAL: Texture2D = preload("res://assets/ui/buttons/button_secondary_normal.png")
-const UI_BUTTON_SECONDARY_HOVER: Texture2D = preload("res://assets/ui/buttons/button_secondary_hover.png")
-const UI_BUTTON_SECONDARY_PRESSED: Texture2D = preload("res://assets/ui/buttons/button_secondary_pressed.png")
-const UI_BUTTON_SECONDARY_DISABLED: Texture2D = preload("res://assets/ui/buttons/button_secondary_disabled.png")
+const UI_BUTTON_SECONDARY_NORMAL: Texture2D = preload("res://assets/ui/buttons/button_secondary_normal.webp")
+const UI_BUTTON_SECONDARY_HOVER: Texture2D = preload("res://assets/ui/buttons/button_secondary_hover.webp")
+const UI_BUTTON_SECONDARY_PRESSED: Texture2D = preload("res://assets/ui/buttons/button_secondary_pressed.webp")
+const UI_BUTTON_SECONDARY_DISABLED: Texture2D = preload("res://assets/ui/buttons/button_secondary_disabled.webp")
 
 const UI_BUTTON_SMALL_NORMAL: Texture2D = preload("res://assets/ui/buttons/button_small_normal.png")
 const UI_BUTTON_SMALL_HOVER: Texture2D = preload("res://assets/ui/buttons/button_small_hover.png")
 const UI_BUTTON_SMALL_PRESSED: Texture2D = preload("res://assets/ui/buttons/button_small_pressed.png")
 const UI_BUTTON_SMALL_DISABLED: Texture2D = preload("res://assets/ui/buttons/button_small_disabled.png")
 
-const UI_PANEL_MODAL_LARGE: Texture2D = preload("res://assets/ui/panels/panel_modal_large.png")
-const UI_PANEL_MODAL_MEDIUM: Texture2D = preload("res://assets/ui/panels/panel_modal_medium.png")
-const UI_PANEL_MODAL_SMALL: Texture2D = preload("res://assets/ui/panels/panel_modal_small.png")
+const UI_PANEL_MODAL_LARGE: Texture2D = preload("res://assets/ui/panels/panel_modal_large.webp")
+const UI_PANEL_MODAL_MEDIUM: Texture2D = preload("res://assets/ui/panels/panel_modal_medium.webp")
+const UI_PANEL_MODAL_SMALL: Texture2D = preload("res://assets/ui/panels/panel_modal_small.webp")
 
 const UI_ICON_PLAY: Texture2D = preload("res://assets/ui/icons/icon_play.svg")
 const UI_ICON_WORLD_MAP: Texture2D = preload("res://assets/ui/icons/icon_world_map.svg")
 const UI_ICON_LOADING: Texture2D = preload("res://assets/ui/icons/icon_loading.svg")
 
 # Stage 4 loading assets.
-const UI_LOADING_BAR_FRAME: Texture2D = preload("res://assets/ui/loading/loading_bar_frame.png")
+const UI_LOADING_BAR_FRAME: Texture2D = preload("res://assets/ui/loading/loading_bar_frame.webp")
 const UI_LOADING_BAR_FILL: Texture2D = preload("res://assets/ui/loading/loading_bar_fill.png")
-const UI_LOADING_BAR_GLOW: Texture2D = preload("res://assets/ui/loading/loading_bar_glow.png")
-const UI_LOADING_BOOKS: Texture2D = preload("res://assets/ui/loading/loading_decor_books.png")
-const UI_LOADING_LANTERN: Texture2D = preload("res://assets/ui/loading/loading_decor_lantern.png")
-const UI_LOADING_CRYSTALS: Texture2D = preload("res://assets/ui/loading/loading_decor_crystals.png")
+const UI_LOADING_BAR_GLOW: Texture2D = preload("res://assets/ui/loading/loading_bar_glow.webp")
+const UI_LOADING_BOOKS: Texture2D = preload("res://assets/ui/loading/loading_decor_books.webp")
+const UI_LOADING_LANTERN: Texture2D = preload("res://assets/ui/loading/loading_decor_lantern.webp")
+const UI_LOADING_CRYSTALS: Texture2D = preload("res://assets/ui/loading/loading_decor_crystals.webp")
 
 # Stage 4 reusable decor.
-const UI_DECOR_BOOKS: Texture2D = preload("res://assets/ui/decor/decor_books_stack.png")
-const UI_DECOR_LANTERN: Texture2D = preload("res://assets/ui/decor/decor_lantern.png")
-const UI_DECOR_CRYSTALS: Texture2D = preload("res://assets/ui/decor/decor_crystals.png")
-const UI_DECOR_WOOD_SIGN: Texture2D = preload("res://assets/ui/decor/decor_wood_sign.png")
-const UI_DECOR_BRANCH: Texture2D = preload("res://assets/ui/decor/decor_branch_leaves.png")
-const UI_DECOR_SCROLL_SMALL: Texture2D = preload("res://assets/ui/decor/decor_scroll_small.png")
-const UI_DECOR_SCROLL_LARGE: Texture2D = preload("res://assets/ui/decor/decor_scroll_large.png")
+const UI_DECOR_BOOKS: Texture2D = preload("res://assets/ui/decor/decor_books_stack.webp")
+const UI_DECOR_LANTERN: Texture2D = preload("res://assets/ui/decor/decor_lantern.webp")
+const UI_DECOR_CRYSTALS: Texture2D = preload("res://assets/ui/decor/decor_crystals.webp")
+const UI_DECOR_WOOD_SIGN: Texture2D = preload("res://assets/ui/decor/decor_wood_sign.webp")
+const UI_DECOR_BRANCH: Texture2D = preload("res://assets/ui/decor/decor_branch_leaves.webp")
+const UI_DECOR_SCROLL_SMALL: Texture2D = preload("res://assets/ui/decor/decor_scroll_small.webp")
+const UI_DECOR_SCROLL_LARGE: Texture2D = preload("res://assets/ui/decor/decor_scroll_large.webp")
 
 # Stage 4 chapter/transition assets.
-const UI_TRANSITION_TITLE: Texture2D = preload("res://assets/ui/transitions/chapter_title_plate.png")
-const UI_TRANSITION_CARD: Texture2D = preload("res://assets/ui/transitions/chapter_card.png")
+const UI_TRANSITION_TITLE: Texture2D = preload("res://assets/ui/transitions/chapter_title_plate.webp")
+const UI_TRANSITION_CARD: Texture2D = preload("res://assets/ui/transitions/chapter_card.webp")
 const UI_TRANSITION_ARROW: Texture2D = preload("res://assets/ui/transitions/transition_arrow.png")
 const UI_TRANSITION_SEPARATOR: Texture2D = preload("res://assets/ui/transitions/transition_separator.png")
-const UI_TRANSITION_NAME: Texture2D = preload("res://assets/ui/transitions/transition_name_plate.png")
+const UI_TRANSITION_NAME: Texture2D = preload("res://assets/ui/transitions/transition_name_plate.webp")
 
 const UI_PARCHMENT_TEXT: Color = Color("3b2a19")
 const UI_PARCHMENT_MUTED: Color = Color("725b3d")

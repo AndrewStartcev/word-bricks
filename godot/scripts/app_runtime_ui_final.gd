@@ -6,11 +6,11 @@ extends "res://scripts/app_runtime_ui.gd"
 
 const FINAL_LEVEL_CATALOG = preload("res://scripts/level_catalog.gd")
 
-const FINAL_HEADER_LONG: Texture2D = preload("res://assets/ui/panels/panel_header_long.png")
-const FINAL_WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.png")
-const FINAL_WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.png")
+const FINAL_HEADER_LONG: Texture2D = preload("res://assets/ui/panels/panel_header_long.webp")
+const FINAL_WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.webp")
+const FINAL_WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.webp")
 const FINAL_WORLD_NODE_LOCKED: Texture2D = preload("res://assets/ui/world_map/location_node_locked.png")
-const FINAL_WORLD_NODE_OPEN: Texture2D = preload("res://assets/ui/world_map/location_node_open.png")
+const FINAL_WORLD_NODE_OPEN: Texture2D = preload("res://assets/ui/world_map/location_node_open.webp")
 const FINAL_WORLD_LABEL: Texture2D = preload("res://assets/ui/world_map/location_label_plate.png")
 const FINAL_WORLD_PROGRESS: Texture2D = preload("res://assets/ui/world_map/location_progress_plate.png")
 const FINAL_WORLD_PATH_SEGMENT: Texture2D = preload("res://assets/ui/world_map/path_segment.png")

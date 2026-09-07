@@ -5,15 +5,15 @@ extends Control
 
 const AUDIO_SERVICE_SCRIPT: Script = preload("res://scripts/audio_service.gd")
 
-const BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.png")
+const BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.webp")
 const TILE_NORMAL: Texture2D = preload("res://assets/tiles/tile_normal_blue.png")
 const TILE_GOAL: Texture2D = preload("res://assets/tiles/tile_goal_gold.png")
 
-const OWL_IDLE: Texture2D = preload("res://assets/characters/owl/owl_idle.png")
-const OWL_HINT: Texture2D = preload("res://assets/characters/owl/owl_hint.png")
-const OWL_HAPPY: Texture2D = preload("res://assets/characters/owl/owl_happy.png")
-const OWL_WORRIED: Texture2D = preload("res://assets/characters/owl/owl_worried.png")
-const OWL_DEFEAT: Texture2D = preload("res://assets/characters/owl/owl_defeat.png")
+const OWL_IDLE: Texture2D = preload("res://assets/characters/owl/owl_idle.webp")
+const OWL_HINT: Texture2D = preload("res://assets/characters/owl/owl_hint.webp")
+const OWL_HAPPY: Texture2D = preload("res://assets/characters/owl/owl_happy.webp")
+const OWL_WORRIED: Texture2D = preload("res://assets/characters/owl/owl_worried.webp")
+const OWL_DEFEAT: Texture2D = preload("res://assets/characters/owl/owl_defeat.webp")
 
 const ICON_SETTINGS: Texture2D = preload("res://assets/ui/icons/icon_settings.svg")
 const ICON_PAUSE: Texture2D = preload("res://assets/ui/icons/icon_pause.svg")

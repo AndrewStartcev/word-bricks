@@ -3,10 +3,10 @@ extends "res://scripts/game_leveled.gd"
 # Final campaign presentation layer. Level data comes from level_catalog.gd;
 # this layer maps each location to its production art and chapter identity.
 
-const SEA_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_sea.png")
-const CITY_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_city.png")
-const FAIRYTALES_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_fairytales.png")
-const TOWER_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_tower.png")
+const SEA_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_sea.webp")
+const CITY_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_city.webp")
+const FAIRYTALES_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_fairytales.webp")
+const TOWER_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_tower.webp")
 
 const SEA_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_sea.svg")
 const CITY_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_city.svg")

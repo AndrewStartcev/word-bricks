@@ -8,10 +8,10 @@ extends "res://scripts/app_runtime_levels.gd"
 const FULL_PROGRESS_VERSION: int = 1
 const TOTAL_CAMPAIGN_LEVELS: int = 60
 
-const SEA_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_sea.png")
-const CITY_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_city.png")
-const FAIRYTALES_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_fairytales.png")
-const TOWER_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_tower.png")
+const SEA_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_sea.webp")
+const CITY_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_city.webp")
+const FAIRYTALES_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_fairytales.webp")
+const TOWER_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_tower.webp")
 
 const SEA_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_sea.svg")
 const CITY_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_city.svg")

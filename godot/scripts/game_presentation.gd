@@ -5,9 +5,9 @@ extends "res://scripts/game.gd"
 
 const UI_HUD_BOX_LARGE: Texture2D = preload("res://assets/ui/panels/hud_box_large.png")
 const UI_HUD_BOX_SMALL: Texture2D = preload("res://assets/ui/panels/hud_box_small.png")
-const UI_SIDEBAR_LEFT: Texture2D = preload("res://assets/ui/panels/sidebar_panel_left.png")
-const UI_SIDEBAR_RIGHT: Texture2D = preload("res://assets/ui/panels/sidebar_panel_right.png")
-const UI_SIDEBAR_INNER: Texture2D = preload("res://assets/ui/panels/sidebar_inner_box.png")
+const UI_SIDEBAR_LEFT: Texture2D = preload("res://assets/ui/panels/sidebar_panel_left.webp")
+const UI_SIDEBAR_RIGHT: Texture2D = preload("res://assets/ui/panels/sidebar_panel_right.webp")
+const UI_SIDEBAR_INNER: Texture2D = preload("res://assets/ui/panels/sidebar_inner_box.webp")
 
 const TILE_BONUS: Texture2D = preload("res://assets/tiles/tile_bonus_green.png")
 const TILE_DANGER: Texture2D = preload("res://assets/tiles/tile_danger_red.png")

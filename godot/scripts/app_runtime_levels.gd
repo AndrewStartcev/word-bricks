@@ -8,10 +8,10 @@ const LEVEL_CATALOG = preload("res://scripts/level_catalog.gd")
 const LEVEL_PROGRESS_VERSION: int = 1
 
 # Stage 3: production world-map and level-map skins.
-const WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.png")
-const WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.png")
+const WORLD_NODE_COMPLETE: Texture2D = preload("res://assets/ui/world_map/location_node_complete.webp")
+const WORLD_NODE_CURRENT: Texture2D = preload("res://assets/ui/world_map/location_node_current.webp")
 const WORLD_NODE_LOCKED: Texture2D = preload("res://assets/ui/world_map/location_node_locked.png")
-const WORLD_NODE_OPEN: Texture2D = preload("res://assets/ui/world_map/location_node_open.png")
+const WORLD_NODE_OPEN: Texture2D = preload("res://assets/ui/world_map/location_node_open.webp")
 const WORLD_LABEL_PLATE: Texture2D = preload("res://assets/ui/world_map/location_label_plate.png")
 const WORLD_PROGRESS_PLATE: Texture2D = preload("res://assets/ui/world_map/location_progress_plate.png")
 const WORLD_PATH_DOT: Texture2D = preload("res://assets/ui/world_map/path_dot.png")

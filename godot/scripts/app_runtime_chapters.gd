@@ -3,8 +3,8 @@ extends "res://scripts/app_runtime_story.gd"
 # Multi-chapter progression layer.
 # Chapter 1: Forest. Chapter 2: Village.
 
-const FOREST_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.png")
-const VILLAGE_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_village.png")
+const FOREST_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.webp")
+const VILLAGE_MENU_BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_village.webp")
 const VILLAGE_CHAPTER_ICON: Texture2D = preload("res://assets/ui/icons/icon_chapter_village.svg")
 
 const VILLAGE_TRANSITION_FRAMES: Array[Texture2D] = [

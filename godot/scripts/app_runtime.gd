@@ -6,10 +6,10 @@ extends Control
 const GAMEPLAY_SCENE: PackedScene = preload("res://scenes/gameplay.tscn")
 const AUDIO_SERVICE_SCRIPT: Script = preload("res://scripts/audio_service.gd")
 
-const BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.png")
-const OWL_IDLE: Texture2D = preload("res://assets/characters/owl/owl_idle.png")
-const OWL_HAPPY: Texture2D = preload("res://assets/characters/owl/owl_happy.png")
-const OWL_DEFEAT: Texture2D = preload("res://assets/characters/owl/owl_defeat.png")
+const BACKGROUND: Texture2D = preload("res://assets/backgrounds/background_forest.webp")
+const OWL_IDLE: Texture2D = preload("res://assets/characters/owl/owl_idle.webp")
+const OWL_HAPPY: Texture2D = preload("res://assets/characters/owl/owl_happy.webp")
+const OWL_DEFEAT: Texture2D = preload("res://assets/characters/owl/owl_defeat.webp")
 
 const ICON_SETTINGS: Texture2D = preload("res://assets/ui/icons/icon_settings.svg")
 const ICON_PAUSE: Texture2D = preload("res://assets/ui/icons/icon_pause.svg")
