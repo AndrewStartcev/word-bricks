@@ -7,16 +7,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GODOT = ROOT / "godot"
-ASSETS = GODOT / "assets"
 ARCHIVE = ROOT / "unused_assets"
 
 TEXT_EXTS = {".gd", ".tscn", ".tres", ".res", ".cfg", ".godot", ".gdshader", ".shader"}
-ASSET_EXTS = {".png", ".webp", ".jpg", ".jpeg", ".svg", ".ogg", ".wav", ".mp3", ".ttf", ".otf"}
+MEDIA_EXTS = {".png", ".webp", ".jpg", ".jpeg", ".svg", ".ogg", ".wav", ".mp3", ".ttf", ".otf"}
 RES_RE = re.compile(r"res://[^\"'\s\)\]\},]+")
-
-
-def godot_path(path: Path) -> str:
-    return "res://" + path.relative_to(GODOT).as_posix()
 
 
 def local_from_res(ref: str) -> Path | None:
@@ -33,19 +28,19 @@ def refs_from_text(path: Path) -> set[str]:
     return {m.group(0).rstrip(";,:.") for m in RES_RE.finditer(text)}
 
 
-def reachable_resources() -> set[Path]:
+def reachable_media() -> set[Path]:
     roots = [GODOT / "project.godot", GODOT / "main.tscn"]
     queue: deque[Path] = deque(p for p in roots if p.exists())
     visited: set[Path] = set()
-    assets: set[Path] = set()
+    media: set[Path] = set()
 
     while queue:
         path = queue.popleft().resolve()
         if path in visited or not path.exists():
             continue
         visited.add(path)
-        if path.is_file() and path.suffix.lower() in ASSET_EXTS:
-            assets.add(path)
+        if path.is_file() and path.suffix.lower() in MEDIA_EXTS:
+            media.add(path)
             continue
         if not path.is_file() or (path.suffix.lower() not in TEXT_EXTS and path.name != "project.godot"):
             continue
@@ -56,43 +51,55 @@ def reachable_resources() -> set[Path]:
             target = target.resolve()
             if not target.exists():
                 continue
-            if target.suffix.lower() in ASSET_EXTS:
-                assets.add(target)
+            if target.suffix.lower() in MEDIA_EXTS:
+                media.add(target)
             elif target.suffix.lower() in TEXT_EXTS or target.name == "project.godot":
                 queue.append(target)
-    return assets
+    return media
 
 
 def main() -> None:
-    used = reachable_resources()
-    all_assets = sorted(p.resolve() for p in ASSETS.rglob("*") if p.is_file() and p.suffix.lower() in ASSET_EXTS)
-    unused = [p for p in all_assets if p not in used]
+    used = reachable_media()
+    all_media = sorted(
+        p.resolve() for p in GODOT.rglob("*")
+        if p.is_file() and p.suffix.lower() in MEDIA_EXTS and ".godot" not in p.parts and "build" not in p.parts
+    )
+    unused = [p for p in all_media if p not in used]
 
-    print(f"reachable assets: {len(used)}")
-    print(f"all project assets: {len(all_assets)}")
-    print(f"unused assets: {len(unused)}")
+    print(f"reachable media: {len(used)}")
+    print(f"all importable media inside Godot project: {len(all_media)}")
+    print(f"unused media: {len(unused)}")
 
     total = 0
+    moved_rel: list[str] = []
     for src in unused:
         rel = src.relative_to(GODOT)
         dst = ARCHIVE / rel
         size = src.stat().st_size
         total += size
+        moved_rel.append(rel.as_posix())
         print(f"MOVE {rel.as_posix()}  {size / 1024:.1f} KiB")
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src), str(dst))
 
     report = ROOT / "UNUSED_ASSETS_MOVED.md"
+    previous = []
+    if report.exists():
+        for line in report.read_text(encoding="utf-8").splitlines():
+            if line.startswith("- `") and line.endswith("`"):
+                previous.append(line[3:-1])
+    combined = sorted(set(previous + moved_rel))
     lines = [
-        "# Unused Godot assets moved out of project",
+        "# Unused Godot media moved out of project",
         "",
         "Generated from the transitive resource graph starting at `godot/project.godot` and `godot/main.tscn`.",
-        "The files below are kept in the repository under `unused_assets/`, but are outside the Godot project and therefore cannot enter an `all_resources` Web export.",
+        "Files are preserved under repository-root `unused_assets/`, outside the Godot project, so an `all_resources` Web export cannot include them.",
         "",
-        f"Moved: **{len(unused)} files**, **{total / (1024 * 1024):.2f} MiB**.",
+        f"Last cleanup moved: **{len(unused)} files**, **{total / (1024 * 1024):.2f} MiB**.",
+        f"Total archived paths: **{len(combined)}**.",
         "",
     ]
-    lines.extend(f"- `{p.relative_to(GODOT).as_posix()}`" for p in unused)
+    lines.extend(f"- `{p}`" for p in combined)
     report.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
