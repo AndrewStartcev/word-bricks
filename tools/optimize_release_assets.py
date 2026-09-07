@@ -24,31 +24,23 @@ def replace_refs(old: str, new: str) -> None:
                 path.write_text(text.replace(old, new), encoding="utf-8")
 
 
-def save_webp(src: Path, dst: Path, *, quality: int, max_size=None, lossless=False) -> tuple[int, int]:
-    before = src.stat().st_size
-    with Image.open(src) as im:
+def reencode_webp(path: Path, *, quality: int, max_size=None) -> tuple[int, int]:
+    before = path.stat().st_size
+    tmp = path.with_suffix(".tmp.webp")
+    with Image.open(path) as im:
         im.load()
         if max_size and (im.width > max_size[0] or im.height > max_size[1]):
             im.thumbnail(max_size, Image.Resampling.LANCZOS)
-        kwargs = {"format": "WEBP", "method": 6}
-        if lossless:
-            kwargs.update(lossless=True, quality=100)
-        else:
-            kwargs.update(quality=quality)
-        im.save(dst, **kwargs)
-    after = dst.stat().st_size
-    if src != dst:
-        src.unlink()
-    return before, after
+        im.save(tmp, format="WEBP", method=6, quality=quality)
+    tmp.replace(path)
+    return before, path.stat().st_size
 
 
 def optimize_backgrounds() -> tuple[int, int, int]:
     count = before = after = 0
     folder = GODOT / "assets" / "backgrounds"
-    for src in sorted(folder.glob("*.png")):
-        dst = src.with_suffix(".webp")
-        b, a = save_webp(src, dst, quality=90, max_size=(1600, 900))
-        replace_refs(f"res://assets/backgrounds/{src.name}", f"res://assets/backgrounds/{dst.name}")
+    for src in sorted(folder.glob("*.webp")):
+        b, a = reencode_webp(src, quality=91, max_size=(1440, 810))
         count += 1; before += b; after += a
     return count, before, after
 
@@ -57,61 +49,44 @@ def optimize_comics() -> tuple[int, int, int]:
     count = before = after = 0
     folder = GODOT / "assets" / "comics"
     for src in sorted(folder.rglob("*.webp")):
-        b = src.stat().st_size
-        tmp = src.with_suffix(".tmp.webp")
-        _, _ = save_webp(src, tmp, quality=92, max_size=(1280, 720))
-        tmp.replace(src)
-        count += 1; before += b; after += src.stat().st_size
-    return count, before, after
-
-
-def optimize_large_ui_pngs() -> tuple[int, int, int]:
-    count = before = after = 0
-    ui = GODOT / "assets" / "ui"
-    for src in sorted(ui.rglob("*.png")):
-        if src.stat().st_size < 100_000:
-            continue
-        dst = src.with_suffix(".webp")
-        b = src.stat().st_size
-        with Image.open(src) as im:
-            im.load()
-            im.save(dst, format="WEBP", method=6, lossless=True, quality=100)
-        a = dst.stat().st_size
-        if a >= b:
-            dst.unlink()
-            continue
-        src.unlink()
-        replace_refs("res://" + src.relative_to(GODOT).as_posix(), "res://" + dst.relative_to(GODOT).as_posix())
+        b, a = reencode_webp(src, quality=93, max_size=(1024, 576))
         count += 1; before += b; after += a
     return count, before, after
 
 
-def optimize_owl() -> tuple[int, int, int]:
-    count = before = after = 0
-    folder = GODOT / "assets" / "characters" / "owl"
-    for src in sorted(folder.glob("*.png")):
-        dst = src.with_suffix(".webp")
-        b = src.stat().st_size
-        with Image.open(src) as im:
-            im.load()
-            im.save(dst, format="WEBP", method=6, lossless=True, quality=100)
-        a = dst.stat().st_size
-        if a >= b:
-            dst.unlink()
+def dedupe_assets() -> tuple[int, int]:
+    # These files were deliberately duplicated by the designer for semantic folders,
+    # but the rendered images are identical. Point runtime at one canonical file so
+    # Godot imports/exports only one texture for each visual.
+    pairs = [
+        ("assets/ui/loading/loading_decor_books.webp", "assets/ui/decor/decor_books_stack.webp"),
+        ("assets/ui/loading/loading_decor_lantern.webp", "assets/ui/decor/decor_lantern.webp"),
+        ("assets/ui/loading/loading_decor_crystals.webp", "assets/ui/decor/decor_crystals.webp"),
+        ("assets/ui/transitions/chapter_title_plate.webp", "assets/ui/panels/panel_header_long.webp"),
+        ("assets/ui/transitions/chapter_card.webp", "assets/ui/panels/panel_modal_small.webp"),
+    ]
+    removed = saved = 0
+    for duplicate_rel, canonical_rel in pairs:
+        duplicate = GODOT / duplicate_rel
+        canonical = GODOT / canonical_rel
+        if not duplicate.exists() or not canonical.exists():
             continue
-        src.unlink()
-        replace_refs("res://" + src.relative_to(GODOT).as_posix(), "res://" + dst.relative_to(GODOT).as_posix())
-        count += 1; before += b; after += a
-    return count, before, after
+        replace_refs("res://" + duplicate_rel, "res://" + canonical_rel)
+        saved += duplicate.stat().st_size
+        duplicate.unlink()
+        removed += 1
+    return removed, saved
 
 
 def main() -> None:
     total_before = total_after = 0
-    for name, fn in [("backgrounds", optimize_backgrounds), ("comics", optimize_comics), ("large UI", optimize_large_ui_pngs), ("owl", optimize_owl)]:
+    for name, fn in [("backgrounds", optimize_backgrounds), ("comics", optimize_comics)]:
         count, before, after = fn()
         total_before += before; total_after += after
         print(f"{name}: {count} files, {mib(before):.1f} MiB -> {mib(after):.1f} MiB")
-    print(f"TOTAL optimized sources: {mib(total_before):.1f} MiB -> {mib(total_after):.1f} MiB (saved {mib(total_before-total_after):.1f} MiB)")
+    removed, dedupe_saved = dedupe_assets()
+    print(f"dedupe: {removed} duplicate files removed, {mib(dedupe_saved):.1f} MiB source bytes removed")
+    print(f"REENCODE saved: {mib(total_before-total_after):.1f} MiB; total direct source reduction this pass: {mib(total_before-total_after+dedupe_saved):.1f} MiB")
 
 
 if __name__ == "__main__":
