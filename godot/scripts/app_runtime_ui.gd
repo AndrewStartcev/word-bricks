@@ -32,9 +32,9 @@ const UI_ICON_LOADING: Texture2D = preload("res://assets/ui/icons/icon_loading.s
 const UI_LOADING_BAR_FRAME: Texture2D = preload("res://assets/ui/loading/loading_bar_frame.webp")
 const UI_LOADING_BAR_FILL: Texture2D = preload("res://assets/ui/loading/loading_bar_fill.png")
 const UI_LOADING_BAR_GLOW: Texture2D = preload("res://assets/ui/loading/loading_bar_glow.webp")
-const UI_LOADING_BOOKS: Texture2D = preload("res://assets/ui/loading/loading_decor_books.webp")
-const UI_LOADING_LANTERN: Texture2D = preload("res://assets/ui/loading/loading_decor_lantern.webp")
-const UI_LOADING_CRYSTALS: Texture2D = preload("res://assets/ui/loading/loading_decor_crystals.webp")
+const UI_LOADING_BOOKS: Texture2D = preload("res://assets/ui/decor/decor_books_stack.webp")
+const UI_LOADING_LANTERN: Texture2D = preload("res://assets/ui/decor/decor_lantern.webp")
+const UI_LOADING_CRYSTALS: Texture2D = preload("res://assets/ui/decor/decor_crystals.webp")
 
 # Stage 4 reusable decor.
 const UI_DECOR_BOOKS: Texture2D = preload("res://assets/ui/decor/decor_books_stack.webp")
@@ -46,8 +46,8 @@ const UI_DECOR_SCROLL_SMALL: Texture2D = preload("res://assets/ui/decor/decor_sc
 const UI_DECOR_SCROLL_LARGE: Texture2D = preload("res://assets/ui/decor/decor_scroll_large.webp")
 
 # Stage 4 chapter/transition assets.
-const UI_TRANSITION_TITLE: Texture2D = preload("res://assets/ui/transitions/chapter_title_plate.webp")
-const UI_TRANSITION_CARD: Texture2D = preload("res://assets/ui/transitions/chapter_card.webp")
+const UI_TRANSITION_TITLE: Texture2D = preload("res://assets/ui/panels/panel_header_long.webp")
+const UI_TRANSITION_CARD: Texture2D = preload("res://assets/ui/panels/panel_modal_small.webp")
 const UI_TRANSITION_ARROW: Texture2D = preload("res://assets/ui/transitions/transition_arrow.png")
 const UI_TRANSITION_SEPARATOR: Texture2D = preload("res://assets/ui/transitions/transition_separator.png")
 const UI_TRANSITION_NAME: Texture2D = preload("res://assets/ui/transitions/transition_name_plate.webp")
