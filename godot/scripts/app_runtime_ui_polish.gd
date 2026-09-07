@@ -4,6 +4,18 @@ extends "res://scripts/app_runtime_ui_final.gd"
 # Release runtime contains no debug level-cycling shortcuts.
 
 
+func _ready() -> void:
+	await super._ready()
+	# Web/Yandex safety: the boot loading Control is intentionally full-screen and
+	# starts with MOUSE_FILTER_STOP. Never let an invisible fading overlay remain
+	# above the menu and swallow pointer events in the iframe.
+	var boot_overlay: Node = get_node_or_null("ProductionLoading")
+	if boot_overlay != null and is_instance_valid(boot_overlay):
+		if boot_overlay is Control:
+			(boot_overlay as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		boot_overlay.queue_free()
+
+
 func _show_main_menu() -> void:
 	_stop_platform_gameplay_final()
 	_dispose_game()
