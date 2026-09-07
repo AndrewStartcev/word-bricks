@@ -101,10 +101,10 @@ func _poll_state() -> void:
 	var raw: Variant = JavaScriptBridge.eval("JSON.stringify(window.__slovopadPikabu ? window.__slovopadPikabu.snapshot() : null);", true)
 	if raw == null:
 		return
-	var parsed := JSON.parse_string(String(raw))
+	var parsed: Variant = JSON.parse_string(String(raw))
 	if not (parsed is Dictionary):
 		return
-	var state: Dictionary = parsed
+	var state: Dictionary = parsed as Dictionary
 	sdk_ready = bool(state.get("sdkReady", false))
 	player_ready = bool(state.get("playerReady", false))
 	player_authorized = bool(state.get("playerAuthorized", false))
@@ -113,7 +113,7 @@ func _poll_state() -> void:
 	if events is Array:
 		for item in events:
 			if item is Dictionary:
-				_handle_event(item)
+				_handle_event(item as Dictionary)
 	if not initialization_finished and sdk_ready:
 		_finish_initialization(true, "")
 
