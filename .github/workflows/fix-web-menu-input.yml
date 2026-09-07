@@ -1,0 +1,52 @@
+name: Fix Web menu input overlay
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-web-menu-input.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Make boot overlay non-blocking before fade
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('godot/scripts/app_runtime_ui.gd')
+          t = p.read_text(encoding='utf-8')
+          old = '''\tif boot_overlay != null and is_instance_valid(boot_overlay):
+\t\tvar fade: Tween = create_tween()
+\t\tfade.tween_property(boot_overlay, "modulate:a", 0.0, 0.18)
+\t\tfade.tween_callback(boot_overlay.queue_free)
+'''
+          new = '''\tif boot_overlay != null and is_instance_valid(boot_overlay):
+\t\t# The loading overlay must stop intercepting pointer input immediately.
+\t\t# On Web/Yandex a transparent Control can otherwise remain above the menu
+\t\t# for a frame/tween edge case and swallow every Button event.
+\t\tboot_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+\t\tboot_overlay.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
+\t\tvar fade: Tween = create_tween()
+\t\tfade.tween_property(boot_overlay, "modulate:a", 0.0, 0.18)
+\t\tfade.tween_callback(boot_overlay.queue_free)
+'''
+          if old not in t:
+              raise SystemExit('target block not found')
+          p.write_text(t.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Remove one-off workflow and commit
+        run: |
+          rm -f .github/workflows/fix-web-menu-input.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: release Web menu input after loading overlay"
+          git push origin HEAD:main
