@@ -24,7 +24,6 @@ const FINAL_LEVEL_NODE_OPEN: Texture2D = preload("res://assets/ui/level_map/leve
 const FINAL_LEVEL_PATH_SEGMENT: Texture2D = preload("res://assets/ui/level_map/level_path_segment.png")
 const FINAL_LEVEL_PATH_DOT: Texture2D = preload("res://assets/ui/level_map/level_path_dot.png")
 
-const FINAL_ICON_RESET: Texture2D = preload("res://assets/ui/icons/icon_reset.svg")
 
 
 func _show_main_menu() -> void:
