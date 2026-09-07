@@ -1,14 +1,17 @@
 extends "res://scripts/app_runtime_full.gd"
 
-# Yandex Games runtime adapter.
+# Platform runtime adapter used by the Pikabu branch as well.
 # Keeps platform concerns outside the core gameplay and campaign scripts.
 
 const CLOUD_SCHEMA: int = 1
 const CLOUD_DEBOUNCE_SECONDS: float = 2.0
 const CLOUD_RETRY_BASE_SECONDS: float = 3.0
 const CLOUD_RETRY_MAX_SECONDS: float = 30.0
-const INTERSTITIAL_MIN_GAMEPLAY_SECONDS: float = 180.0
-const INTERSTITIAL_MIN_COMPLETED_LEVELS: int = 2
+# Pikabu moderation must be able to observe monetization during a normal short test.
+# The SDK itself enforces whether an ad is currently available via canShow(), so
+# request the first fullscreen ad at the first completed level boundary.
+const INTERSTITIAL_MIN_GAMEPLAY_SECONDS: float = 0.0
+const INTERSTITIAL_MIN_COMPLETED_LEVELS: int = 1
 
 var _cloud_sync_enabled: bool = false
 var _cloud_sync_suspended_for_account_selection: bool = false
@@ -33,8 +36,8 @@ func _ready() -> void:
 	if _yandex_games == null:
 		push_error("YandexGames autoload is missing")
 		return
-	# Wait for SDK bootstrap before loading local state so cloud progress can be
-	# restored before the menu is shown. Native/local builds fall back immediately.
+	# Wait for SDK bootstrap before loading local state so platform state can be
+	# resolved before the menu is shown. Native/local builds fall back immediately.
 	if not _yandex_games.initialization_finished:
 		await _yandex_games.initialized
 
@@ -45,11 +48,10 @@ func _ready() -> void:
 	_connect_platform_signals()
 	_cloud_sync_enabled = true
 
-	# If the cloud did not replace local data, publish the current local snapshot.
 	if not cloud_applied:
 		_queue_cloud_sync()
 
-	# Game Ready must be sent only after the playable UI exists.
+	# Platform ready must be sent only after the playable UI exists.
 	_yandex_games.loading_ready()
 
 	if _yandex_games.external_paused:
@@ -124,7 +126,6 @@ func _show_settings_modal(from_game: bool) -> void:
 		_yandex_games.gameplay_stop()
 	super._show_settings_modal(from_game)
 
-	# Product decision: intro replay is not exposed in Settings.
 	var replay_button: Button = _find_button_by_text(modal_layer, "Посмотреть вступление")
 	if replay_button != null:
 		var parent: Node = replay_button.get_parent()
@@ -151,9 +152,8 @@ func _restart_game() -> void:
 
 
 func _on_levels_pressed() -> void:
-	# Fullscreen ads are requested only after an explicit user action at a logical
-	# break. Our own cooldown prevents an ad request after every short round; Yandex
-	# still controls whether an eligible request is actually shown.
+	# Fullscreen is requested only at a completed-level boundary. Pikabu's SDK
+	# performs the final availability/cooldown check through canShow().
 	if current_screen == "game" and game != null and is_instance_valid(game) and bool(game.get("chapter_complete")):
 		_ui_click()
 		if _can_request_interstitial():
@@ -177,7 +177,6 @@ func _can_request_interstitial() -> bool:
 
 
 func request_rewarded_hint() -> void:
-	# Ready for the final UI pass: a future "+ hint for ad" button can call this.
 	if current_screen != "game" or game == null or not is_instance_valid(game):
 		return
 	_yandex_games.gameplay_stop()
@@ -185,7 +184,6 @@ func request_rewarded_hint() -> void:
 
 
 func request_yandex_auth() -> void:
-	# Must only be called from a clearly labelled voluntary authorization button.
 	_yandex_games.open_auth_dialog()
 
 
@@ -311,8 +309,6 @@ func _on_fullscreen_closed(_was_shown: bool) -> void:
 	if not _interstitial_pending:
 		return
 	_interstitial_pending = false
-	# Reset on every completed request, including wasShown=false, so the app does
-	# not hammer the SDK again on the very next short level.
 	_gameplay_seconds_since_interstitial = 0.0
 	_completed_levels_since_interstitial = 0
 	_continue_after_completed_level()
@@ -341,11 +337,8 @@ func _save_local_state() -> void:
 
 
 func _queue_cloud_sync() -> void:
-	# Native builds and a failed SDK keep using local saves only.
 	if not _yandex_games.available or not _yandex_games.sdk_ready:
 		return
-	# Mark dirty even when Player is temporarily unavailable. _process() will retry
-	# once it becomes ready instead of silently losing a save.
 	_cloud_dirty = true
 	_cloud_timer = CLOUD_DEBOUNCE_SECONDS
 	_cloud_retry_attempts = 0
@@ -393,7 +386,6 @@ func _on_cloud_saved(success: bool) -> void:
 			_cloud_dirty = false
 			_cloud_timer = 0.0
 		else:
-			# Local state changed while the previous request was in flight.
 			_cloud_dirty = true
 			_cloud_timer = CLOUD_DEBOUNCE_SECONDS
 		return
@@ -426,17 +418,11 @@ func _bump_cloud_revision() -> void:
 
 
 func _on_account_selection_opened() -> void:
-	# Yandex explicitly recommends pausing regular player-data synchronization while
-	# the platform asks the user which anonymous/authorized progress to keep.
 	_cloud_sync_suspended_for_account_selection = true
 
 
 func _on_account_changed() -> void:
 	_cloud_sync_suspended_for_account_selection = false
-
-	# Never replace an active round from underneath the player. If an account
-	# changes mid-game, the current local session remains authoritative and is
-	# queued to the newly selected Player after the next save boundary.
 	if current_screen == "game":
 		_queue_cloud_sync()
 		return
@@ -495,7 +481,6 @@ func _merge_cloud_into_local_file() -> bool:
 			if local_saved_at == cloud_saved_at and local_revision >= cloud_revision:
 				return false
 		elif local_revision >= cloud_revision:
-			# Backward compatibility for saves made before timestamps were stored.
 			return false
 
 	var cloud_config: Dictionary = cloud_config_value as Dictionary
@@ -523,22 +508,3 @@ func _config_to_dictionary(config: ConfigFile) -> Dictionary:
 			values[key] = config.get_value(section, key)
 		output[section] = values
 	return output
-
-
-func _apply_platform_language() -> void:
-	# The game currently declares only Russian. We still detect the Yandex locale at
-	# launch (mandatory) and map unsupported locales to the declared fallback.
-	var locale: String = _yandex_games.effective_language
-	if locale.is_empty():
-		locale = "ru"
-	TranslationServer.set_locale(locale)
-
-
-func _find_button_by_text(root: Node, wanted_text: String) -> Button:
-	for child in root.get_children():
-		if child is Button and (child as Button).text == wanted_text:
-			return child as Button
-		var nested: Button = _find_button_by_text(child, wanted_text)
-		if nested != null:
-			return nested
-	return null
