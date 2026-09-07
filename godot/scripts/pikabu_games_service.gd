@@ -65,12 +65,11 @@ func gameplay_start() -> void:
 func gameplay_stop() -> void:
 	pass
 
-func save_cloud(payload: Dictionary, _flush: bool = false) -> void:
-	if not sdk_ready or not player_ready:
-		cloud_saved.emit(false)
-		return
-	var code := "window.__slovopadPikabu && window.__slovopadPikabu.saveCloud(%s);" % JSON.stringify(payload)
-	JavaScriptBridge.eval(code, true)
+# Pikabu build intentionally keeps progression local-only.
+# The inherited Yandex-compatible runtime may call this method, so acknowledge
+# the write immediately without any network request.
+func save_cloud(_payload: Dictionary, _flush: bool = false) -> void:
+	cloud_saved.emit(true)
 
 func show_fullscreen_ad() -> void:
 	if not sdk_ready:
@@ -110,9 +109,6 @@ func _poll_state() -> void:
 	player_ready = bool(state.get("playerReady", false))
 	player_authorized = bool(state.get("playerAuthorized", false))
 	last_error = String(state.get("lastError", ""))
-	var cloud: Variant = state.get("cloudData", {})
-	if cloud is Dictionary:
-		cloud_data = (cloud as Dictionary).duplicate(true)
 	var events: Variant = state.get("events", [])
 	if events is Array:
 		for item in events:
@@ -134,7 +130,6 @@ func _handle_event(event: Dictionary) -> void:
 		"rewarded_open": rewarded_opened.emit(String(event.get("tag", "reward")))
 		"rewarded": rewarded.emit(String(event.get("tag", "reward")))
 		"rewarded_close": rewarded_closed.emit(String(event.get("tag", "reward")), bool(event.get("wasShown", false)))
-		"cloud_saved": cloud_saved.emit(bool(event.get("success", false)))
 		"account_changed": account_changed.emit()
 
 func _finish_initialization(success: bool, error_text: String) -> void:
@@ -153,7 +148,7 @@ func _bridge_source() -> String:
   const bridge = {
     sdk: null,
     events: [],
-    state: { sdkReady:false, playerReady:false, playerAuthorized:false, cloudData:{}, lastError:'' },
+    state: { sdkReady:false, playerReady:false, playerAuthorized:false, lastError:'' },
     push(type, extra={}) { this.events.push(Object.assign({type}, extra)); },
     snapshot() { return Object.assign({}, this.state, {events:this.events.splice(0)}); },
     async loadSdk() {
@@ -167,16 +162,6 @@ func _bridge_source() -> String:
         document.head.appendChild(s);
       });
     },
-    async loadCloud() {
-      if (!this.sdk || !this.sdk.player || !this.sdk.player.id) return;
-      try {
-        const r = await fetch('cloud.php?action=load&player=' + encodeURIComponent(this.sdk.player.id), {cache:'no-store'});
-        if (r.ok) {
-          const data = await r.json();
-          this.state.cloudData = data && data.data ? data.data : {};
-        }
-      } catch (e) { this.state.lastError = 'Cloud load: ' + String(e); }
-    },
     async init() {
       try {
         await this.loadSdk();
@@ -184,9 +169,8 @@ func _bridge_source() -> String:
         this.state.playerReady = !!(this.sdk && this.sdk.player);
         this.state.playerAuthorized = !!(this.sdk && this.sdk.player && this.sdk.player.isAuthorized);
         if (this.sdk && this.sdk.on) {
-          this.sdk.on('userAuthorized', async () => {
+          this.sdk.on('userAuthorized', () => {
             this.state.playerAuthorized = !!this.sdk.player.isAuthorized;
-            await this.loadCloud();
             this.push('account_changed');
           });
         }
@@ -195,21 +179,10 @@ func _bridge_source() -> String:
         });
         window.addEventListener('blur', () => this.push('pause'));
         window.addEventListener('focus', () => this.push('resume'));
-        await this.loadCloud();
         this.state.sdkReady = true;
       } catch (e) { this.state.lastError = String(e); }
     },
     gameStarted() { try { this.sdk && this.sdk.gameStarted && this.sdk.gameStarted(); } catch (_) {} },
-    async saveCloud(payload) {
-      if (!this.sdk || !this.sdk.player || !this.sdk.player.id) { this.push('cloud_saved',{success:false}); return; }
-      try {
-        const r = await fetch('cloud.php?action=save&player=' + encodeURIComponent(this.sdk.player.id), {
-          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
-        });
-        this.state.cloudData = payload;
-        this.push('cloud_saved',{success:r.ok});
-      } catch (e) { this.state.lastError='Cloud save: '+String(e); this.push('cloud_saved',{success:false}); }
-    },
     async showFullscreen() {
       if (!this.sdk || !this.sdk.ads || !this.sdk.ads.fullscreen) { this.push('fullscreen_close',{wasShown:false}); return; }
       try {
