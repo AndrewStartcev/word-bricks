@@ -1,0 +1,44 @@
+name: Repair Yandex runtime singleton
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-yandex-runtime.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch runtime
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('godot/scripts/app_runtime_yandex.gd')
+          text = p.read_text(encoding='utf-8')
+          if 'var _yandex_games: Variant = null' not in text:
+              marker = 'var _completed_levels_since_interstitial: int = 0\n'
+              text = text.replace(marker, marker + 'var _yandex_games: Variant = null\n', 1)
+          text = text.replace('YandexGames', '_yandex_games')
+          ready = 'func _ready() -> void:\n'
+          replacement = 'func _ready() -> void:\n\t_yandex_games = get_node_or_null("/root/YandexGames")\n\tif _yandex_games == null:\n\t\tpush_error("YandexGames autoload is missing")\n\t\treturn\n'
+          text = text.replace(ready, replacement, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+          git rm .github/workflows/fix-yandex-runtime.yml
+      - name: Commit repair
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add godot/scripts/app_runtime_yandex.gd .github/workflows/fix-yandex-runtime.yml
+          git commit -m "fix: resolve Yandex autoload dynamically"
+          git push origin HEAD:main
